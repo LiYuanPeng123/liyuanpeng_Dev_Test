@@ -1,0 +1,4 @@
+P4PORT=192.168.10.4:1666
+P4USER=liyuanpeng
+P4CLIENT=Liyuanpeng_Dev_TestVersion
+P4IGNORE=.p4ignore.txt;.gitignore

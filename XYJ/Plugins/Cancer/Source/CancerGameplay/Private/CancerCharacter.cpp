@@ -1,0 +1,50 @@
+#include "CancerCharacter.h"
+
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
+#include "CancerNativeGamePlayTag.h"
+#include "Components/CancerMovementComponent.h"
+#include "GameFramework/CancerDamageType.h"
+
+
+ACancerCharacter::ACancerCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCancerMovementComponent>(CharacterMovementComponentName))
+{
+	PrimaryActorTick.bCanEverTick = true;
+	MovementModeTagMap.Add(MOVE_Walking, Movement_Walking);
+	MovementModeTagMap.Add(MOVE_NavWalking, Movement_Walking);
+	MovementModeTagMap.Add(MOVE_Falling, Movement_Falling);
+	MovementModeTagMap.Add(MOVE_Swimming, Movement_Swimming);
+	MovementModeTagMap.Add(MOVE_Flying, Movement_Flying);
+	MovementModeTagMap.Add(MOVE_Custom, Movement_Custom);
+}
+
+void ACancerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
+{
+	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
+
+	SetMovementModeTag(PrevMovementMode, PreviousCustomMode, false);
+	SetMovementModeTag(GetCharacterMovement()->MovementMode, GetCharacterMovement()->CustomMovementMode, true);
+}
+
+void ACancerCharacter::SetMovementModeTag(EMovementMode MovementMode, uint8 CustomMovementMode, bool bTagEnabled)
+{
+	if (auto ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(this))
+	{
+		const FGameplayTag* MovementModeTag = nullptr;
+		if (MovementMode == MOVE_Custom)
+		{
+			MovementModeTag = CustomMovementModeTagMap.Find(CustomMovementMode);
+		}
+		else
+		{
+			MovementModeTag = MovementModeTagMap.Find(MovementMode);
+		}
+
+		if (MovementModeTag && MovementModeTag->IsValid())
+		{
+			ASC->SetLooseGameplayTagCount(*MovementModeTag, (bTagEnabled ? 1 : 0));
+		}
+	}
+}
