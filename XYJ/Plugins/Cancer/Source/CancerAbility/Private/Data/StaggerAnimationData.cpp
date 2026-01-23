@@ -51,6 +51,9 @@ FStaggerAnimationConfig UStaggerAnimationDataAsset::FindStaggerAnimation(
 	case EStaggerType::Normal:
 		TargetArray = NormalAnimations;
 		break;
+	case EStaggerType::Air:
+		TargetArray = AirAnimations;
+		break;
 	case EStaggerType::KnockDown:
 		TargetArray = KnockDownAnimations;
 		break;
@@ -72,12 +75,12 @@ FStaggerAnimationConfig UStaggerAnimationDataAsset::FindStaggerAnimation(
 			return Config;
 		}
 	}
-	
+
 	// 如果要求精确匹配但没找到，返回nullptr
 	if (bExactMatch)
 	{
 		UE_LOG(LogTemp, Error, TEXT("No Stagger Animation Data ID:[%s,%d]"),
-			*StaticEnum<EStaggerType>()->GetNameStringByValue((int64)Module), AnimationID);
+		       *StaticEnum<EStaggerType>()->GetNameStringByValue((int64)Module), AnimationID);
 		return FStaggerAnimationConfig();
 	}
 
@@ -96,6 +99,8 @@ const TArray<FStaggerAnimationConfig>& UStaggerAnimationDataAsset::GetAnimations
 		return KnockDownAnimations;
 	case EStaggerType::KnockFly:
 		return KnockFlyAnimations;
+	case EStaggerType::Air:
+		return AirAnimations;
 	default:
 		static TArray<FStaggerAnimationConfig> EmptyArray;
 		return EmptyArray;

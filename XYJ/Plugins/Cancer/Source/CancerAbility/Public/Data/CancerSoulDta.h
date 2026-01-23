@@ -28,6 +28,10 @@ struct FCancerSoulData : public FTableRowBase
 	float SoulBonusPct = 0.5f;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="弹反气力伤害系数", meta=(ClampMin = 0))
 	float PerfectBlockDamageSoul = 2.f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly ,Category="战斗参数配置",
+		meta = (RequiredAssetDataTags = "RowStructure=/Script/CancerAbility.CombatImpactCosmeticsTableRow"))
+	TObjectPtr<UDataTable> SurfaceImpactTable;
 
 
 	FCancerSoulData()

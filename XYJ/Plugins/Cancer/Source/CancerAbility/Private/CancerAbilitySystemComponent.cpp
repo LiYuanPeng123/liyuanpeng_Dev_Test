@@ -41,7 +41,6 @@ TArray<FCancerActiveAbilityInfo> UCancerAbilitySystemComponent::GetAllAbilitiesI
 UCancerAbilitySystemComponent::UCancerAbilitySystemComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	CombatData = nullptr;
 }
 
 void UCancerAbilitySystemComponent::BlockAbilitiesTags(const FGameplayTagContainer& Tags)
@@ -551,16 +550,14 @@ float UCancerAbilitySystemComponent::GetLevel()
 	return 1.f;
 }
 
-void UCancerAbilitySystemComponent::SetCombatData(UCancerCombatData* InCombatData)
+void UCancerAbilitySystemComponent::SetCombatData(const FCancerSoulData& InCombatData)
 {
 	CombatData = InCombatData;
 }
 
 FCancerSoulData UCancerAbilitySystemComponent::GetSoulData() const
 {
-	if (CombatData)
-		return CombatData->SoulData;
-	return FCancerSoulData();
+	return CombatData;
 }
 
 

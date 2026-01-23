@@ -190,14 +190,14 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category="Ability|Combat")
-	void SetCombatData(UCancerCombatData* InCombatData);
+	void SetCombatData(const FCancerSoulData& InCombatData);
 	UFUNCTION(BlueprintCallable, Category="Ability|Combat")
 	FCancerSoulData GetSoulData() const;
 
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
-	UCancerCombatData* CombatData;
+	FCancerSoulData CombatData;
 #pragma	endregion
 
 #pragma region 技能数据 技能优先级 消耗冷却
