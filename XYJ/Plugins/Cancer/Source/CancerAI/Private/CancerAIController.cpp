@@ -69,7 +69,6 @@ void ACancerAIController::EndPlay(const EEndPlayReason::Type reason)
 
 void ACancerAIController::StartBehaviorTree()
 {
-	check(BehaviorTree);
 	if (BehaviorTree == nullptr)
 	{
 		return;

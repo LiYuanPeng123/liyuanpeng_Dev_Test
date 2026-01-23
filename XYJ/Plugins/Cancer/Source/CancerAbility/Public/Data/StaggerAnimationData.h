@@ -52,7 +52,8 @@ enum class EStaggerType : uint8
 {
 	Normal UMETA(DisplayName = "普通"),
 	KnockDown UMETA(DisplayName = "倒地连"),
-	KnockFly UMETA(DisplayName = "浮空连")
+	KnockFly UMETA(DisplayName = "浮空连"),
+	Air UMETA(DisplayName = "空中受击")
 };
 
 UCLASS(BlueprintType)
@@ -63,6 +64,9 @@ class CANCERABILITY_API UStaggerAnimationDataAsset : public UDataAsset
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName = "普通模块", Category = "硬直动画")
 	TArray<FStaggerAnimationConfig> NormalAnimations;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName = "空中受击模块", Category = "硬直动画")
+	TArray<FStaggerAnimationConfig> AirAnimations;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName = "倒地连模块", Category = "硬直动画")
 	TArray<FStaggerAnimationConfig> KnockDownAnimations;

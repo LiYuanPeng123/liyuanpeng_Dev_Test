@@ -56,7 +56,7 @@ protected:
 	bool CanBeHit(float ImpactForce);
 
 	UFUNCTION(BlueprintCallable)
-	FVector CalculateHitDirection(const FVector& AttackerLocation, const FVector& HitLocation) const;
+	FVector CalculateHitDirection(const FVector& AttackerLocation, const FVector& HitLocation, bool bPlanar = true) const;
 	
 	void ScaleHitDuration(UAnimMontage* Montage, float TargetDuration,FName SelectSection);
 	

@@ -84,6 +84,33 @@ FStaggerAnimationConfig UStaggerAnimationDataAsset::FindStaggerAnimation(
 		return FStaggerAnimationConfig();
 	}
 
+	// 空中状态特殊逻辑：向下取最近的ID
+	if (Module == EStaggerType::Air)
+	{
+		const FStaggerAnimationConfig* BestConfig = nullptr;
+		
+		for (const FStaggerAnimationConfig& Config : TargetArray)
+		{
+			// 必须比目标ID小
+			if (Config.StaggerMontageID < AnimationID)
+			{
+				// 如果还没找到过，或者找到了更大的ID（更接近目标ID），则更新
+				if (BestConfig == nullptr || Config.StaggerMontageID > BestConfig->StaggerMontageID)
+				{
+					BestConfig = &Config;
+				}
+			}
+		}
+
+		if (BestConfig)
+		{
+			return *BestConfig;
+		}
+
+		// A) 如果向下读取也读取不到，则不播放硬直动画
+		return FStaggerAnimationConfig();
+	}
+
 	// 对于非精确匹配（倒地连和浮空连），查找最接近的编号
 	return FindClosestAnimation(TargetArray, AnimationID);
 }

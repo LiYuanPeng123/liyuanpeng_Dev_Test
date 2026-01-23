@@ -174,7 +174,11 @@ bool UCombatAbility_HitStagger::CanCheckHit(const FGameplayEventData* TriggerEve
 	AActor* Attacker = DamageInfo.SourceActor;
 	const FVector AttackerLoc = Attacker ? Attacker->GetActorLocation() : FVector::ZeroVector;
 	const FVector ImpactLoc = DamageInfo.HitResult.ImpactPoint;
-	FVector HitDirection = CalculateHitDirection(AttackerLoc, ImpactLoc);
+
+	//TODO::空中的受击的方向
+	// 对于空中受击或浮空连，使用3D方向计算（bPlanar = false）
+	bool bPlanar = (StaggerType != EStaggerType::Air && StaggerType != EStaggerType::KnockFly);
+	FVector HitDirection = CalculateHitDirection(AttackerLoc, ImpactLoc, bPlanar);
 	
 	FName PrimarySection = GetDirectionalSectionName(HitDirection, HitComfig.DirectionType);
 	
@@ -253,16 +257,30 @@ bool UCombatAbility_HitStagger::CanBeHit(float ImpactForce)
 }
 
 FVector UCombatAbility_HitStagger::CalculateHitDirection(const FVector& AttackerLocation,
-                                                         const FVector& HitLocation) const
+                                                         const FVector& HitLocation, bool bPlanar) const
 {
 	auto Ownering = GetOwningActorFromActorInfo();
 	FVector OwnerLocation = Ownering->GetActorLocation();
 
-	FVector Direction = (AttackerLocation - OwnerLocation).GetSafeNormal2D();
-
-	if (Direction.IsNearlyZero())
+	FVector Direction;
+	
+	if (bPlanar)
 	{
-		Direction = (HitLocation - OwnerLocation).GetSafeNormal2D();
+		Direction = (AttackerLocation - OwnerLocation).GetSafeNormal2D();
+
+		if (Direction.IsNearlyZero())
+		{
+			Direction = (HitLocation - OwnerLocation).GetSafeNormal2D();
+		}
+	}
+	else
+	{
+		Direction = (AttackerLocation - OwnerLocation).GetSafeNormal();
+
+		if (Direction.IsNearlyZero())
+		{
+			Direction = (HitLocation - OwnerLocation).GetSafeNormal();
+		}
 	}
 
 	if (Direction.IsNearlyZero())
@@ -411,6 +429,9 @@ EStaggerType UCombatAbility_HitStagger::GetStaggerType()
 		{
 			return EStaggerType::Air;
 		}
+		
+		
+		return EStaggerType::Normal;
 	}
 	return EStaggerType::Normal;
 }
