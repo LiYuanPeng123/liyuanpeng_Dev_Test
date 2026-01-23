@@ -1,0 +1,24 @@
+{
+    "FileVersion": 3,
+    "Version": 1,
+    "VersionName": "1.0",
+    "FriendlyName": "Object Debugger",
+    "Description": "用于调试运行时Object状态的小工具",
+    "Category": "Debug",
+    "CreatedBy": "Fantasy City Team",
+    "CreatedByURL": "",
+    "DocsURL": "",
+    "MarketplaceURL": "",
+    "SupportURL": "",
+    "CanContainContent": true,
+    "IsBetaVersion": false,
+    "IsExperimentalVersion": false,
+    "Installed": true,
+    "Modules": [
+        {
+            "Name": "ObjectDebugger",
+            "Type": "Editor",
+            "LoadingPhase": "Default"
+        }
+    ]
+}

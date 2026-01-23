@@ -1,0 +1,8 @@
+{
+	"BuildId": "43139311",
+	"Modules": 
+	{
+		"Text3D": "UnrealEditor-Text3D-Win64-DebugGame.dll",
+		"Text3DEditor": "UnrealEditor-Text3DEditor-Win64-DebugGame.dll"
+	}
+}

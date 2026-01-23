@@ -1,0 +1,35 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "2024.5.8",
+	"FriendlyName": "LanguageSwitch",
+	"Description": "العربية-Deutsch-English-español-Latinoamérica-français-italiano-日本語-한국어-polski-português-русский-Türkçe-中文简体",
+	"Category": "Editor",
+	"CreatedBy": "Jiecool",
+	"CreatedByURL": "https://www.youtube.com/@jiecool9099",
+	"DocsURL": "https://www.youtube.com/watch?v=4JyHUM6rsgs",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/dbdee38690c74f28861537f1188b3605",
+	"SupportURL": "https://www.youtube.com/watch?v=4JyHUM6rsgs",
+	"EngineVersion": "5.6.0",
+	"CanContainContent": false,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "LanguageSwitch",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64",
+				"Mac",
+				"Linux"
+			]
+		}
+	],
+	"LocalizationTargets": [
+		{
+			"Name": "LanguageSwitch",
+			"LoadingPolicy": "Editor",
+			"ConfigGenerationPolicy": "Never"
+		}
+	]
+}

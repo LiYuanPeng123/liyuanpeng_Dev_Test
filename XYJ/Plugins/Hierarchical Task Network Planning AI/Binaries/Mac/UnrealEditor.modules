@@ -1,0 +1,8 @@
+{
+	"BuildId": "43139311",
+	"Modules": 
+	{
+		"HTN": "UnrealEditor-HTN.dylib",
+		"HTNEditor": "UnrealEditor-HTNEditor.dylib"
+	}
+}

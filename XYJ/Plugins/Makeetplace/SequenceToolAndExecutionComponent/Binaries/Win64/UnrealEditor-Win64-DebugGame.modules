@@ -1,0 +1,8 @@
+{
+	"BuildId": "43139311",
+	"Modules": 
+	{
+		"CinematicExecutionEditorToolKit": "UnrealEditor-CinematicExecutionEditorToolKit-Win64-DebugGame.dll",
+		"CinematicExecutionEditorToolKitEditor": "UnrealEditor-CinematicExecutionEditorToolKitEditor-Win64-DebugGame.dll"
+	}
+}

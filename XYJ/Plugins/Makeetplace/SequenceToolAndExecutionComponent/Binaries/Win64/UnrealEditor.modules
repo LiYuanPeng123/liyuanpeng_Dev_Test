@@ -1,0 +1,8 @@
+{
+	"BuildId": "43139311",
+	"Modules": 
+	{
+		"CinematicExecutionEditorToolKit": "UnrealEditor-CinematicExecutionEditorToolKit.dll",
+		"CinematicExecutionEditorToolKitEditor": "UnrealEditor-CinematicExecutionEditorToolKitEditor.dll"
+	}
+}
