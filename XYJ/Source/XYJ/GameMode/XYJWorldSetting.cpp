@@ -1,0 +1,2 @@
+﻿
+#include "XYJWorldSetting.h"
