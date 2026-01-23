@@ -1,0 +1,58 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "5.6",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "XYJ",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		},
+		{
+			"Name": "Text3D",
+			"Enabled": true
+		},
+		{
+			"Name": "MetaHumanCharacter",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
+		},
+		{
+			"Name": "MotionTrajectory",
+			"Enabled": true
+		},
+		{
+			"Name": "GASAttachEditor",
+			"Enabled": true
+		},
+		{
+			"Name": "MotionWarping",
+			"Enabled": true
+		},
+		{
+			"Name": "Chooser",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayCameras",
+			"Enabled": true
+		},
+		{
+			"Name": "TemplateSequence",
+			"Enabled": true
+		}
+	]
+}
