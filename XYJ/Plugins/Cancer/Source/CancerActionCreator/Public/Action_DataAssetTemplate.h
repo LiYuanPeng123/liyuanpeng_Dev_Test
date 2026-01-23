@@ -1,11 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystemComponent.h"
-#include "AbilitySystemGlobals.h"
 #include "AIController.h"
 #include "CancerCharacter.h"
-#include "CancerCharacterSubsystem.h"
 #include "Actions/CancerCreatorActionBase.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
@@ -112,32 +109,24 @@ UCLASS()
 class CANCERACTIONCREATOR_API UAction_DataAsset : public UDataAsset
 {
 	GENERATED_BODY()
+
 public:
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Pawn, DisplayName="Pawn Class")
-	TSoftClassPtr<ACancerCharacter> PawnClass;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", DisplayName = "AI控制器")
-	TSoftClassPtr<AAIController> CustomControllerClass;
-	
-	//身份证
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= Action, DisplayName="身份证")
-	FGameplayTagContainer Identify;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Action, DisplayName="ActorClass")
+	TSubclassOf<AActor> ActorClass = AActor::StaticClass();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Action, DisplayName = "Controller",
+		meta = (EditCondition = "bIsPawn", EditConditionHides))
+	TSubclassOf<AController> ControllerClass = AController::StaticClass();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= Action, DisplayName="默认Actions")
 	TArray<UAction_DataAssetTemplate*> TemplateActions;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, Category= Action, DisplayName="ActionArray")
 	TArray<TObjectPtr<class UCancerCreatorActionBase>> ActionArray;
-	
+
 	void PostExecute(AActor* Actor)
 	{
 		ForEachAction([Actor](auto* Action) { Action->PostExecuteAction(Actor); });
-		
-		if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Actor))
-		{
-			ASC->AddLooseGameplayTags(Identify);
-		}
 	}
 
 	void PreExecute(AActor* Actor)
@@ -186,31 +175,14 @@ public:
 
 	void GatherSoftReferences(TArray<FSoftObjectPath>& OutPaths) const
 	{
-		// 1. 收集自身的软引用
-		if (!PawnClass.IsNull())
-		{
-			OutPaths.Add(PawnClass.ToSoftObjectPath());
-		}
-		if (!CustomControllerClass.IsNull())
-		{
-			OutPaths.Add(CustomControllerClass.ToSoftObjectPath());
-		}
-
-		// 2. 收集 Actions 的软引用
-		for (auto Template : TemplateActions)
-		{
-			if (Template)
-			{
-				Template->GatherSoftReferences(OutPaths);
-			}
-		}
-		for (auto Action : ActionArray)
+		//  收集 Actions 的软引用
+		ForEachAction([&OutPaths](const auto* Action)
 		{
 			if (Action)
 			{
 				Action->GatherSoftReferences(OutPaths);
 			}
-		}
+		});
 	}
 
 	bool StartAsyncLoadAndExecute(AActor* Actor, FSimpleDelegate OnCompleted = FSimpleDelegate())
@@ -223,7 +195,7 @@ public:
 	{
 		TArray<FSoftObjectPath> Paths;
 		GatherSoftReferences(Paths);
-		
+
 		if (Paths.Num() == 0)
 		{
 			PreExecute(Actor);
@@ -231,37 +203,40 @@ public:
 			if (OnCompleted.IsBound()) OnCompleted.Execute();
 			return nullptr;
 		}
-		
+
 		TWeakObjectPtr<AActor> WeakActor = Actor;
 		TWeakObjectPtr<UAction_DataAsset> WeakThis(this);
-		
-		if (UWorld* World = Actor->GetWorld())
-		{
-			UCancerCharacterSubsystem* CharacterSubsystem =  World->GetSubsystem<UCancerCharacterSubsystem>();
-			if (CharacterSubsystem)
-			{
-				CharacterSubsystem->AddCharacter(Actor);
-			}
-		}
-		
+
 		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
 		TSharedPtr<FStreamableHandle> Handle = Streamable.RequestAsyncLoad(Paths, FStreamableDelegate::CreateLambda(
 			                                                                   [WeakActor, WeakThis, OnCompleted]()
 			                                                                   {
-				                                                                   if (!WeakActor.IsValid() || !WeakThis.IsValid()) return;
-				                                                                   WeakThis->PreExecute(WeakActor.Get());
-				                                                                   WeakThis->PostExecute(WeakActor.Get());
+				                                                                   if (!WeakActor.IsValid() || !WeakThis
+					                                                                   .IsValid())
+					                                                                   return;
+				                                                                   WeakThis->PreExecute(
+					                                                                   WeakActor.Get());
+				                                                                   WeakThis->PostExecute(
+					                                                                   WeakActor.Get());
 				                                                                   if (OnCompleted.IsBound())
 					                                                                   OnCompleted.Execute();
 			                                                                   }));
 		return Handle;
 	}
 
+	virtual void PostLoad() override;
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
 private:
+	UPROPERTY(Transient, VisibleAnywhere, Category = "Config", meta = (HideInDetailPanel))
+	bool bIsPawn = false;
+
 	// 模板辅助函数，消除重复遍历逻辑
 	// Func 接受 (UAction_DataAssetTemplate* 或 UCancerCreatorActionBase*)
-	template<typename FuncType>
-	void ForEachAction(FuncType Func)
+	template <typename FuncType>
+	void ForEachAction(FuncType Func)const
 	{
 		for (auto TemplateAction : TemplateActions)
 		{

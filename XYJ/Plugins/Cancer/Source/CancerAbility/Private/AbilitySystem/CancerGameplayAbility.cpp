@@ -709,9 +709,10 @@ void UCancerGameplayAbility::PreActivate(const FGameplayAbilitySpecHandle Handle
 	if (UCancerAbilitySystemComponent* ASC = GetCancerAbilitySystemComponentFromActorInfo())
 	{
 		AbilityData = ASC->FindAbilityDataByTags(GetAssetTags());
-		if (AbilityData.AbilityDef.AbilityTag.IsValid() && AbilityTags.IsEmpty())
+		if (AbilityData.AbilityDef.AbilityTag.IsValid() && GetAssetTags().IsEmpty())
 		{
-			AbilityTags = AbilityData.AbilityDef.AbilityTag;
+
+			SetAssetTags(AbilityData.AbilityDef.AbilityTag);
 		}
 	}
 

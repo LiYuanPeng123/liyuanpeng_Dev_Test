@@ -219,6 +219,52 @@ TArray<FAbilityInfo> UCancerAbilityFunctionLibrary::K2_GetAbilityInfoFromActor(A
 	return AbilityArray;
 }
 
+UCancerMeleeScan* UCancerAbilityFunctionLibrary::CreateMeleeScanInstance(AActor* Owner, AActor* Causer,
+	UCancerDamageType* DamageType, UMeshComponent* SourceMesh, float Duration)
+{
+	auto DamageParameter = DamageType->DamageParameter;
+	DamageType->DamageParameter.HitInfo.SourceActor = Owner;
+	TSubclassOf<UCancerMeleeScan> ScanClass = DamageParameter.TranceInfo.MeleeScanClass;
+	if (!IsValid(ScanClass))
+	{
+		//使用默认的
+		ScanClass = UCancerMeleeScan::StaticClass();
+	}
+
+	FVector ShapeDimensions = FVector::ZeroVector;
+	switch (DamageParameter.TranceInfo.ScanMode)
+	{
+	case EMeleeScanMode::LineTrace:
+		ShapeDimensions = FVector::ZeroVector;
+		break;
+	case EMeleeScanMode::BoxSweep:
+		ShapeDimensions = DamageParameter.TranceInfo.BoxHalfExtent;
+		break;
+	case EMeleeScanMode::CapsuleSweep:
+		ShapeDimensions = DamageParameter.TranceInfo.CapsuleExtent;
+		break;
+	case EMeleeScanMode::SphereSweep:
+		ShapeDimensions.X = DamageParameter.TranceInfo.SphereRadius;
+		break;
+	default:
+		break;
+	}
+	UCancerMeleeScan* NewMeleeScan = UCancerMeleeScan::NewInstance(
+		ScanClass, Owner, Causer, SourceMesh,
+		DamageParameter.TranceInfo.SocketNames,
+		DamageParameter.TranceInfo.TraceSocketOffset,
+		DamageParameter.TranceInfo.ScanChannels,
+		DamageParameter.TranceInfo.ScanMode, ShapeDimensions,
+		DamageParameter.TranceInfo.TraceRadius, Duration);
+
+	NewMeleeScan->DamageType = DamageType;
+	NewMeleeScan->bEnableDebug = DamageType->bEnableDebug;
+	// Allow repeated hits on the same target according to DamageType settings
+	NewMeleeScan->bAllowMultipleHitsOnSameTarget = DamageParameter.TranceInfo.bAllowMultipleHits;
+	return NewMeleeScan;
+}
+
+
 FGameplayTag UCancerAbilityFunctionLibrary::NormalizeToSegments(const FGameplayTag& Tag, int32 Number, bool bForward)
 {
 	if (!Tag.IsValid()) return FGameplayTag();

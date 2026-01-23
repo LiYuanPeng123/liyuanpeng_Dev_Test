@@ -258,6 +258,14 @@ public:
 
 #pragma endregion
 
+
+#pragma region 构建伤害检测
+	UFUNCTION(BlueprintCallable, Category  = "Cancer|Ability")
+	static UCancerMeleeScan* CreateMeleeScanInstance(AActor* Owner, AActor* Causer, UCancerDamageType* DamageType,
+											  UMeshComponent* SourceMesh, float Duration);
+
+#pragma endregion
+
 	//拼接Tag
 	UFUNCTION(BlueprintPure)
 	static FGameplayTag NormalizeToSegments(const FGameplayTag& Tag,int32 Number = 1,bool bForward = true);

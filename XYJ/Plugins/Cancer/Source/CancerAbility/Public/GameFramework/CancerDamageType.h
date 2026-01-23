@@ -111,34 +111,34 @@ USTRUCT(BlueprintType)
 struct FCancerTranceInfo
 {
 	GENERATED_BODY()
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan", DisplayName="触发检测源")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Melee Scan", DisplayName="触发检测源")
 	EDamageDetectionSource CombatAbilitySource = EDamageDetectionSource::Weapon;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan", DisplayName="检测模式")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Melee Scan", DisplayName="检测模式")
 	EMeleeScanMode ScanMode = EMeleeScanMode::BoxSweep;
 	UPROPERTY(EditAnywhere, Category = "Melee Scan", DisplayName="检测武器插槽",
 		meta=(EditCondition = "CombatAbilitySource == EDamageDetectionSource::Weapon ", EditConditionHides))
 	TArray<FName> WeaponNames;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan", DisplayName="检测插槽")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Melee Scan", DisplayName="检测插槽")
 	TArray<FName> SocketNames;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan", DisplayName="插槽偏移")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Melee Scan", DisplayName="插槽偏移")
 	TMap<FName, FVector> TraceSocketOffset;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan", DisplayName="检测目标")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Melee Scan", DisplayName="检测目标")
 	TArray<TEnumAsByte<ECollisionChannel>> ScanChannels;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan", NoClear, DisplayName="伤害检测类")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Melee Scan", NoClear, DisplayName="伤害检测类")
 	TSubclassOf<UCancerMeleeScan> MeleeScanClass;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan",
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Melee Scan",
 		meta = (EditCondition = "ScanMode == EMeleeScanMode::BoxSweep", EditConditionHides)
 		, DisplayName="盒体检测配置")
 	FVector BoxHalfExtent = FVector(30.f, 30.f, 30.f);
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan",
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Melee Scan",
 		meta = (EditCondition = "ScanMode == EMeleeScanMode::CapsuleSweep", EditConditionHides)
 		, DisplayName="胶囊体检测配置")
 	FVector CapsuleExtent = FVector(30.f, 30.f, 30.f);
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan",
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Melee Scan",
 		meta = (EditCondition = "ScanMode == EMeleeScanMode::SphereSweep", EditConditionHides)
 		, DisplayName="球体检测配置")
 	float SphereRadius = 30.f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan", DisplayName="自定义检测半径")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Melee Scan", DisplayName="自定义检测半径")
 	float TraceRadius = 30.f;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="允许多次检测")
 	bool bAllowMultipleHits = false;
@@ -240,11 +240,11 @@ class CANCERABILITY_API UCancerDamageType : public UObject
 public:
 	UCancerDamageType();
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="禁用伤害检测")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="禁用伤害检测",meta=(ExposeOnSpawn = true))
 	bool bEnable = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan", DisplayName="启用调试")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan", DisplayName="启用调试",meta=(ExposeOnSpawn = true))
 	bool bEnableDebug = true;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="DamageParameter")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="DamageParameter",meta=(ExposeOnSpawn = true))
 	FCancerDamageParameter DamageParameter;
 
 	UFUNCTION(blueprintCallable, BlueprintPure, Category = "Melee Scan")

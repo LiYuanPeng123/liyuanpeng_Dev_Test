@@ -46,8 +46,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Cancer Combat|Melee Scan")
 	float GetDuration() const { return Duration; }
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Melee Scan")
+	UFUNCTION(BlueprintCallable,BlueprintNativeEvent, Category = "Melee Scan")
 	void ScanForTargets(TArray<FHitResult>& OutHits);
+	
 	UFUNCTION(BlueprintPure, Category = "Melee Scan")
 	virtual bool HasValidScanData() const;
 

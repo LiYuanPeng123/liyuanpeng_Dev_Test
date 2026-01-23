@@ -1,16 +1,11 @@
 #include "CancerAIController.h"
-
-#include "AbilitySystemGlobals.h"
 #include "AIPatrolComponent.h"
 #include "CancerAITypes.h"
 #include "CancerCoreFunctionLibrary.h"
-#include "PatrolPath.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Enum.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
-#include "Components/CancerCombatAttributeComponent.h"
-#include "Components/CancerHeroComponent.h"
 #include "GameFramework/Character.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -60,6 +55,16 @@ void ACancerAIController::BeginPlay()
 void ACancerAIController::EndPlay(const EEndPlayReason::Type reason)
 {
 	Super::EndPlay(reason);
+	if (IsValid(PerceptionComponent))
+	{
+		PerceptionComponent->OnPerceptionUpdated.RemoveDynamic(this, &ACancerAIController::HandleOnPerceptionUpdated);
+		PerceptionComponent->OnTargetPerceptionForgotten.RemoveDynamic(
+			this, &ACancerAIController::HandleOnTargetPerceptionForgotten);
+		PerceptionComponent->OnTargetPerceptionUpdated.RemoveDynamic(
+			this, &ACancerAIController::HandleOnTargetPerceptionUpdated);
+		PerceptionComponent->OnTargetPerceptionInfoUpdated.RemoveDynamic(
+			this, &ACancerAIController::HandleOnTargetPerceptionInfoUpdated);
+	}
 }
 
 void ACancerAIController::StartBehaviorTree()
@@ -69,7 +74,7 @@ void ACancerAIController::StartBehaviorTree()
 	{
 		return;
 	}
-	
+
 
 	UBlackboardData* const bbData = BehaviorTree->BlackboardAsset;
 	if (bbData == nullptr)
@@ -88,12 +93,25 @@ void ACancerAIController::StartBehaviorTree()
 	homeDistanceKey = BlackboardComponent->GetKeyID("SpawnDistance");
 	pathPointKey = BlackboardComponent->GetKeyID("PathPoint");
 	SpawnActorLocation = GetPawn()->GetActorLocation();
-	if (PerceptionComponent)
+	if (IsValid(PerceptionComponent))
 	{
+		PerceptionComponent->OnPerceptionUpdated.RemoveDynamic(this, &ACancerAIController::HandleOnPerceptionUpdated);
 		PerceptionComponent->OnPerceptionUpdated.AddDynamic(this, &ACancerAIController::HandleOnPerceptionUpdated);
-		PerceptionComponent->OnTargetPerceptionForgotten.AddDynamic(this, &ACancerAIController::HandleOnTargetPerceptionForgotten);
-		PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &ACancerAIController::HandleOnTargetPerceptionUpdated);
-		PerceptionComponent->OnTargetPerceptionInfoUpdated.AddDynamic(this, &ACancerAIController::HandleOnTargetPerceptionInfoUpdated);
+
+		PerceptionComponent->OnTargetPerceptionForgotten.RemoveDynamic(
+			this, &ACancerAIController::HandleOnTargetPerceptionForgotten);
+		PerceptionComponent->OnTargetPerceptionForgotten.AddDynamic(
+			this, &ACancerAIController::HandleOnTargetPerceptionForgotten);
+
+		PerceptionComponent->OnTargetPerceptionUpdated.RemoveDynamic(
+			this, &ACancerAIController::HandleOnTargetPerceptionUpdated);
+		PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(
+			this, &ACancerAIController::HandleOnTargetPerceptionUpdated);
+
+		PerceptionComponent->OnTargetPerceptionInfoUpdated.RemoveDynamic(
+			this, &ACancerAIController::HandleOnTargetPerceptionInfoUpdated);
+		PerceptionComponent->OnTargetPerceptionInfoUpdated.AddDynamic(
+			this, &ACancerAIController::HandleOnTargetPerceptionInfoUpdated);
 	}
 	BehaviorTreeComponent->StartTree(*BehaviorTree);
 }
@@ -165,7 +183,6 @@ void ACancerAIController::SetTarget(AActor* target)
 	{
 		UCancerStaticsSubsystem::StaticBattleStart(GetPawn());
 	}
-	
 }
 
 AActor* ACancerAIController::GetTarget() const
@@ -188,18 +205,18 @@ bool ACancerAIController::RequestAnotherTarget(TArray<FCancerQueryMatch> TagQuer
 	// 获取所有感知到的角色
 	TArray<AActor*> Candidates;
 	Perception->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), Candidates);
-	
-	
-	TArray<AActor*> FilterActors =  Candidates.FilterByPredicate([this,TagQuery](const AActor* Actor)->bool
+
+
+	TArray<AActor*> FilterActors = Candidates.FilterByPredicate([this,TagQuery](const AActor* Actor)-> bool
 	{
-		if (UCancerCoreFunctionLibrary::MatchAllQueryByActor(Actor,TagQuery))
+		if (UCancerCoreFunctionLibrary::MatchAllQueryByActor(Actor, TagQuery))
 		{
 			return true;
 		}
 		return false;
 	});
-	
-	
+
+
 	if (FilterActors.Num() == 0)
 	{
 		SetTarget(nullptr);
@@ -260,9 +277,8 @@ void ACancerAIController::HandleOnTargetPerceptionForgotten(AActor* Actor)
 }
 
 
-
 void ACancerAIController::HandleOnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
- {
+{
 	UE_LOG(LogTemp, Warning, TEXT("ACancerAIController::HandleOnTargetPerceptionUpdated"))
 	if (Actor)
 	{
@@ -272,7 +288,7 @@ void ACancerAIController::HandleOnTargetPerceptionUpdated(AActor* Actor, FAIStim
 	{
 		return;
 	}
-	
+
 	if (!Stimulus.WasSuccessfullySensed())
 	{
 		SetTarget(nullptr);
@@ -293,4 +309,3 @@ void ACancerAIController::HandleOnTargetPerceptionInfoUpdated(const FActorPercep
 {
 	UE_LOG(LogTemp, Warning, TEXT("ACancerAIController::HandleOnTargetPerceptionInfoUpdated"))
 }
-

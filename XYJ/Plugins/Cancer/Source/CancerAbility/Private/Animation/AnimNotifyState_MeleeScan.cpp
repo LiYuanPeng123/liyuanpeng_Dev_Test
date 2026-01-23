@@ -48,7 +48,7 @@ void UAnimNotifyState_MeleeScan::NotifyBegin(USkeletalMeshComponent* MeshComp, U
 									if (!WeaponMesh)return;
 									if (WeaponMesh->IsA(UMeshComponent::StaticClass()))
 									{
-										UE_LOG(LogTemp,Warning,TEXT("注册伤害"));
+										UE_LOG(LogTemp, Warning, TEXT("注册伤害"));
 										UMeshComponent* WeaponMeshComponent = Cast<UMeshComponent>(WeaponMesh);
 										UCancerDamageType* RuntimeDamage = DuplicateObject<UCancerDamageType>(
 											Damage, OwnerActor);
