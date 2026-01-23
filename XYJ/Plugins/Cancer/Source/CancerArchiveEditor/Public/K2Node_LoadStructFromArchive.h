@@ -17,5 +17,16 @@ public:
 	virtual void ExpandNode(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
 	virtual bool IsNodePure() const override { return false; }
 	virtual void ReconstructNode() override;
+	virtual void PostReconstructNode() override;
 	virtual void ReallocatePinsDuringReconstruction(TArray<UEdGraphPin*>& OldPins) override;
+	virtual void NotifyPinConnectionListChanged(UEdGraphPin* Pin) override;
+	virtual void PinDefaultValueChanged(UEdGraphPin* Pin) override;
+	virtual bool ShouldShowNodeProperties() const override { return true; }
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+
+protected:
+	void RefreshOutputStructType();
+
+	UPROPERTY(EditAnywhere, Category = "CancerArchive")
+	UScriptStruct* StructType;
 };

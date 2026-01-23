@@ -7,6 +7,8 @@
 
 class UAction_DataAsset;
 
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnActionCompled, AActor*, OutActor, AController*, OutController);
+
 UCLASS()
 class CANCERACTIONCREATOR_API UCancerActionLibrary : public UBlueprintFunctionLibrary
 {
@@ -19,4 +21,10 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Action",meta=(WorldContext="WorldContextObject"))
 	static AActor* SpawnActorFromActionData(const UObject* WorldContextObject, TSoftObjectPtr<UAction_DataAsset> Data ,FTransform SpawnTrans);
+	
+	UFUNCTION(BlueprintCallable, Category = "AICreator", meta = (WorldContext = "WorldContextObject", AutoCreateRefTerm="OnCompleted"))
+	static  APawn* K2_CreatePawnFromActionData(UObject* WorldContextObject,
+		UAction_DataAsset* ActionData, const FTransform& SpawnTransform,FOnActionCompled OnCompleted,
+		ESpawnActorCollisionHandlingMethod CollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn ,
+		AActor* InOwner = nullptr);
 };

@@ -1,12 +1,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AIController.h"
 #include "CancerTeamAgentInterface.h"
 #include "GameplayTagContainer.h"
 #include "TeamConfigDataAsset.h"
 #include "Components/CancerTeamComponent.h"
 #include "GameFramework/Character.h"
+#include "Perception/AIPerceptionComponent.h"
 #include "CancerCharacter.generated.h"
+
+class AAIController;
 
 UCLASS()
 class CANCERGAMEPLAY_API ACancerCharacter : public ACharacter, public ICancerTeamAgentInterface
@@ -36,14 +40,18 @@ public:
 	{
 		if (UCancerTeamComponent* TeamComp = FindComponentByClass<UCancerTeamComponent>())
 		{
-			if (TeamComp->GetTeamsConfiguration())
+			FGameplayTag Tag;
+			if (TeamComp->FindTagByIndex(TeamID.GetId(), Tag))
 			{
-				FGameplayTag Tag;
-				if (TeamComp->GetTeamsConfiguration()->FindTagByIndex(TeamID.GetId(), Tag))
-				{
-					TeamComp->TeamTag = Tag;
-				}
+				TeamComp->TeamTag = Tag;
 			}
+		}
+		if (AAIController* AIController = Cast<AAIController>(GetController()))
+		{
+			//同步到控制器中的TeamId
+			IGenericTeamAgentInterface* TeamAgent = Cast<IGenericTeamAgentInterface>(AIController);
+			TeamAgent->SetGenericTeamId(TeamID);
+			AIController->PerceptionComponent->RequestStimuliListenerUpdate();
 		}
 	}
 
@@ -51,13 +59,21 @@ public:
 	{
 		if (const UCancerTeamComponent* TeamComp = FindComponentByClass<UCancerTeamComponent>())
 		{
-			if (TeamComp->GetTeamsConfiguration())
-			{
-				return FGenericTeamId(TeamComp->GetTeamsConfiguration()->GetTeamIndex(TeamComp->TeamTag));
-			}
+			return FGenericTeamId(TeamComp->GetTeamIndex(TeamComp->TeamTag));
 		}
 		return FGenericTeamId(0);
 	}
 
+	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const override
+	{
+		if (const UCancerTeamComponent* MyTeamComp = FindComponentByClass<UCancerTeamComponent>())
+		{
+			if (const UCancerTeamComponent* OtherTeamComp = Other.FindComponentByClass<UCancerTeamComponent>())
+			{
+				return MyTeamComp->GetAttitude(MyTeamComp->TeamTag, OtherTeamComp->TeamTag);
+			}
+		}
+		return ETeamAttitude::Friendly;
+	}
 #pragma endregion
 };

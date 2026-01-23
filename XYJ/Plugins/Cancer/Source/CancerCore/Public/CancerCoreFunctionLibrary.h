@@ -84,4 +84,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Cancore")
 	static bool MatchAllQuery(const TArray<FCancerQueryMatch>& QueryMatches, const FGameplayTagContainer& TagContainer);
+
+
+	UFUNCTION(BlueprintCallable, Category = "Cancore")
+	static bool MatchAllQueryByActor(const AActor*Actor,const TArray<FCancerQueryMatch>& QueryMatches);
 };

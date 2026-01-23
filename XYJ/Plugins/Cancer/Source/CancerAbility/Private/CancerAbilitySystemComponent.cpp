@@ -72,6 +72,16 @@ void UCancerAbilitySystemComponent::GetActiveAbilitiesWithTags(const FGameplayTa
 	}
 }
 
+void UCancerAbilitySystemComponent::K2_AddLooseGameplayTag(FGameplayTag InTag)
+{
+	AddLooseGameplayTag(InTag);
+}
+
+void UCancerAbilitySystemComponent::K2_RemoveLooseGameplayTag(FGameplayTag InTag)
+{
+	RemoveLooseGameplayTag(InTag);
+}
+
 void UCancerAbilitySystemComponent::TryActivateAbilitiesOnSpawn()
 {
 	ABILITYLIST_SCOPE_LOCK();

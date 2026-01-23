@@ -107,6 +107,12 @@ public:
 	//获取激活的实例技能
 	void GetActiveAbilitiesWithTags(const FGameplayTagContainer& GameplayTagContainer,
 	                                TArray<UGameplayAbility*>& ActiveAbilities);
+	
+	UFUNCTION(BlueprintCallable,DisplayName="AddLooseGameplayTag")
+	void K2_AddLooseGameplayTag(FGameplayTag InTag);
+	
+	UFUNCTION(BlueprintCallable,DisplayName="RemoveLooseGameplayTag")
+	void K2_RemoveLooseGameplayTag(FGameplayTag InTag);
 
 #pragma region Tag匹配
 

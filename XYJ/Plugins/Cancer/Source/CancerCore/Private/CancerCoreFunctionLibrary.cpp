@@ -1,5 +1,7 @@
 #include "CancerCoreFunctionLibrary.h"
 
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "Engine/AssetManager.h"
 #include "Engine/AssetManagerTypes.h"
 #include "Interfaces/CancerCoreSystemInterface.h"
@@ -158,4 +160,37 @@ bool UCancerCoreFunctionLibrary::MatchAllQuery(const TArray<FCancerQueryMatch>& 
 		}
 	}
 	return bResult;
+}
+
+bool UCancerCoreFunctionLibrary::MatchAllQueryByActor(const AActor* Actor,
+	const TArray<FCancerQueryMatch>& QueryMatches)
+{
+	if (Actor==nullptr) return false;
+	if (auto ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Actor))
+	{
+		const FGameplayTagContainer& TagContainer = ASC->GetOwnedGameplayTags();
+
+		bool bResult = true;
+		for (auto Query : QueryMatches)
+		{
+			if (Query.TagQuery.Matches(TagContainer))
+			{
+				if (Query.bReverse)
+				{
+					bResult = false;
+					break;
+				}
+			}
+			else
+			{
+				if (!Query.bReverse)
+				{
+					bResult = false;
+					break;
+				}
+			}
+		}
+		return bResult;
+	}
+	return false;
 }

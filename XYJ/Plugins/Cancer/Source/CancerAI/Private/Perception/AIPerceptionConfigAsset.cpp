@@ -89,7 +89,7 @@ bool UAIPerceptionConfigAsset::ShouldAcceptTarget(const AAIController* Controlle
 		SelfTeamComp = Controller->GetPawn()->FindComponentByClass<UCancerTeamComponent>();
 	}
 	const UCancerTeamComponent* OtherTeamComp = Target->FindComponentByClass<UCancerTeamComponent>();
-	if (SelfTeamComp && OtherTeamComp && SelfTeamComp->GetTeamsConfiguration())
+	if (SelfTeamComp && OtherTeamComp )
 	{
 		const ETeamAttitude::Type Att = SelfTeamComp->GetAttitude(SelfTeamComp->TeamTag, OtherTeamComp->TeamTag);
 		switch (Att)

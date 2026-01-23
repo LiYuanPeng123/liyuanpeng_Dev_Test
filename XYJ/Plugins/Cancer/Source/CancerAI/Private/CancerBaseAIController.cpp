@@ -2,6 +2,9 @@
 
 #include "CancerBaseAIController.h"
 
+#include "Components/CancerTeamComponent.h"
+#include "Perception/AIPerceptionComponent.h"
+
 
 ACancerBaseAIController::ACancerBaseAIController()
 {
@@ -17,3 +20,4 @@ void ACancerBaseAIController::OnUnPossess()
 {
 	Super::OnUnPossess();
 }
+

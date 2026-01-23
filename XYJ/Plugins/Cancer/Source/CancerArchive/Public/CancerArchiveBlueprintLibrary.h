@@ -23,13 +23,13 @@ public:
 	
 	
 	UFUNCTION(BlueprintCallable, CustomThunk, Category="CancerArchive|Struct",
-		meta=(CustomStructureParam="InStruct", ExpandBoolAsExecs="bIsValid", WorldContext="WorldContextObject"))
-	static void SetStructToArchive(const UObject* WorldContextObject, FName Key, const int32& InStruct, bool& bIsValid);
+		meta=(CustomStructureParam="StructType", ExpandBoolAsExecs="bIsValid", WorldContext="WorldContextObject"))
+	static void SetStructToArchive(const UObject* WorldContextObject, FName Key, const int32& StructType, bool& bIsValid);
 	DECLARE_FUNCTION(execSetStructToArchive);
 
 	UFUNCTION(BlueprintCallable, CustomThunk, Category="CancerArchive|Struct",
-		meta=(CustomStructureParam="OutStruct", ExpandBoolAsExecs="bIsValid", WorldContext="WorldContextObject"))
-	static void GetStructFromArchive(const UObject* WorldContextObject, FName Key, int32& OutStruct, bool& bIsValid);
+		meta=(CustomStructureParam="StructType", ExpandBoolAsExecs="bIsValid"))
+	static void GetStructFromArchive(const UObject* WorldContextObject, FName Key, int32& StructType, bool& bIsValid);
 	DECLARE_FUNCTION(execGetStructFromArchive);
 
 	UFUNCTION(BlueprintPure, Category="CancerArchive|Struct", meta=(WorldContext="WorldContextObject"))

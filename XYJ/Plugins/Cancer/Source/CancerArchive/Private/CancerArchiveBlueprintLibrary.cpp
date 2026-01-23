@@ -69,7 +69,6 @@ DEFINE_FUNCTION(UCancerArchiveBlueprintLibrary::execSetStructToArchive)
 {
 	P_GET_OBJECT(UObject, WorldContextObject);
 	P_GET_PROPERTY(FNameProperty, Key);
-	P_GET_OBJECT(UScriptStruct, StructType);
 	Stack.MostRecentProperty = nullptr;
 	Stack.MostRecentPropertyAddress = nullptr;
 	Stack.Step(Stack.Object, nullptr);
@@ -111,7 +110,6 @@ DEFINE_FUNCTION(UCancerArchiveBlueprintLibrary::execGetStructFromArchive)
 {
 	P_GET_OBJECT(UObject, WorldContextObject);
 	P_GET_PROPERTY(FNameProperty, Key);
-	P_GET_OBJECT(UScriptStruct, StructType);
 	Stack.MostRecentProperty = nullptr;
 	Stack.MostRecentPropertyAddress = nullptr;
 	Stack.Step(Stack.Object, nullptr);
@@ -124,14 +122,9 @@ DEFINE_FUNCTION(UCancerArchiveBlueprintLibrary::execGetStructFromArchive)
 	void* BoolAddr = Stack.MostRecentPropertyAddress;
 	P_FINISH;
 	bool bOk = false;
-	if (StructType && StructProp && StructAddr && BoolProp && BoolAddr)
+	if (StructProp && StructAddr && BoolProp && BoolAddr)
 	{
 		UScriptStruct* ScriptStruct = StructProp->Struct;
-		if (ScriptStruct != StructType)
-		{
-			*(bool*)BoolAddr = false;
-			return;
-		}
 		if (auto* Subsystem = UCancerArchiveSubsystem::Get(WorldContextObject))
 		{
 			if (auto* Archive = Subsystem->GetArchive<UCancerArchiveBase>(false))

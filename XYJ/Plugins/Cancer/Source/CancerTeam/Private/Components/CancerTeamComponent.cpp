@@ -124,6 +124,17 @@ void UCancerTeamComponent::SetTeamTag(FGameplayTag NewTeamTag)
 		{
 			if (AActor* Owner = GetOwner())
 			{
+				//更改控制器中SetGenericTeamId
+				if (APawn* PawnOwner = Cast<APawn>(Owner))
+				{
+					if (AController* Controller = PawnOwner->GetController())
+					{
+						if (IGenericTeamAgentInterface* TeamAgent = Cast<IGenericTeamAgentInterface>(Controller))
+						{
+							TeamAgent->SetGenericTeamId(NewId);
+						}
+					}
+				}
 				if (Owner->Implements<UCancerTeamAgentInterface>())
 				{
 					ICancerTeamAgentInterface::ConditionalBroadcastTeamChanged(Owner, OldId, NewId);

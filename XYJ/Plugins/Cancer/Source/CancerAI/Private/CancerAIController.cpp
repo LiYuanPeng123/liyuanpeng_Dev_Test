@@ -1,11 +1,16 @@
 #include "CancerAIController.h"
+
+#include "AbilitySystemGlobals.h"
 #include "AIPatrolComponent.h"
 #include "CancerAITypes.h"
+#include "CancerCoreFunctionLibrary.h"
 #include "PatrolPath.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Enum.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
+#include "Components/CancerCombatAttributeComponent.h"
+#include "Components/CancerHeroComponent.h"
 #include "GameFramework/Character.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -160,6 +165,7 @@ void ACancerAIController::SetTarget(AActor* target)
 	{
 		UCancerStaticsSubsystem::StaticBattleStart(GetPawn());
 	}
+	
 }
 
 AActor* ACancerAIController::GetTarget() const
@@ -172,7 +178,7 @@ bool ACancerAIController::HasTarget() const
 	return GetTarget() != nullptr;
 }
 
-bool ACancerAIController::RequestAnotherTarget()
+bool ACancerAIController::RequestAnotherTarget(TArray<FCancerQueryMatch> TagQuery)
 {
 	UAIPerceptionComponent* Perception = PerceptionComponent;
 	if (!Perception || !GetPawn())
@@ -182,15 +188,28 @@ bool ACancerAIController::RequestAnotherTarget()
 	// 获取所有感知到的角色
 	TArray<AActor*> Candidates;
 	Perception->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), Candidates);
-	if (Candidates.Num() == 0)
+	
+	
+	TArray<AActor*> FilterActors =  Candidates.FilterByPredicate([this,TagQuery](const AActor* Actor)->bool
 	{
+		if (UCancerCoreFunctionLibrary::MatchAllQueryByActor(Actor,TagQuery))
+		{
+			return true;
+		}
+		return false;
+	});
+	
+	
+	if (FilterActors.Num() == 0)
+	{
+		SetTarget(nullptr);
 		return false;
 	}
 	AActor* Best = nullptr;
 	float BestDistSq = TNumericLimits<float>::Max();
 	const FVector MyLoc = GetPawn()->GetActorLocation();
 	// 从候选中选择最近的角色（可被配置资产过滤）
-	for (AActor* Cand : Candidates)
+	for (AActor* Cand : FilterActors)
 	{
 		if (!IsValid(Cand) || Cand == GetPawn()) continue;
 		if (ActivePerceptionConfig)
@@ -207,9 +226,9 @@ bool ACancerAIController::RequestAnotherTarget()
 			Best = Cand;
 		}
 	}
+	SetTarget(Best);
 	if (Best)
 	{
-		SetTarget(Best);
 		return true;
 	}
 	return false;

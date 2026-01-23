@@ -12,16 +12,43 @@ void UK2Node_LoadStructFromArchive::AllocateDefaultPins()
 	const UEdGraphSchema_K2* Schema = GetDefault<UEdGraphSchema_K2>();
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Exec, FName("Exec"));
 	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Name, FName("Key"));
-	UEdGraphPin* StructTypePin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FName("StructType"));
-	StructTypePin->PinType.PinSubCategoryObject = nullptr; // wildcard for type dropdown
+	
+	// Create StructType input pin to allow dynamic connections
+	CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Object, UScriptStruct::StaticClass(), FName("StructType"));
+
 	UEdGraphPin* StructOut = CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Struct, FName("Struct"));
-	StructOut->PinType = StructTypePin->PinType;
+	if (StructType)
+	{
+		StructOut->PinType.PinSubCategoryObject = StructType;
+	}
+	else
+	{
+		StructOut->PinType.PinCategory = UEdGraphSchema_K2::PC_Wildcard;
+		StructOut->PinType.PinSubCategoryObject = nullptr;
+	}
+	
 	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, FName("Succeeded"));
 	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, FName("Failed"));
 }
 
+void UK2Node_LoadStructFromArchive::PostReconstructNode()
+{
+	Super::PostReconstructNode();
+	RefreshOutputStructType();
+}
+
 FText UK2Node_LoadStructFromArchive::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
+	UEdGraphPin* StructTypePin = FindPin(FName("StructType"));
+	if (StructTypePin && StructTypePin->LinkedTo.Num() > 0)
+	{
+		return FText::FromString(TEXT("Load Struct From Archive (Dynamic)"));
+	}
+
+	if (StructType)
+	{
+		return FText::Format(NSLOCTEXT("K2Node", "LoadStructFromArchive_Title", "Load Struct {0} From Archive"), StructType->GetDisplayNameText());
+	}
 	return FText::FromString(TEXT("Load Struct From Archive"));
 }
 
@@ -45,13 +72,28 @@ void UK2Node_LoadStructFromArchive::ExpandNode(FKismetCompilerContext& CompilerC
 	UEdGraphPin* SucceededPin = FindPinChecked(FName("Succeeded"), EGPD_Output);
 	UEdGraphPin* FailedPin = FindPinChecked(FName("Failed"), EGPD_Output);
 	UEdGraphPin* KeyPin = FindPinChecked(FName("Key"), EGPD_Input);
-	UEdGraphPin* StructTypePin = FindPinChecked(FName("StructType"), EGPD_Input);
 	UEdGraphPin* StructOutPin = FindPinChecked(FName("Struct"), EGPD_Output);
+	UEdGraphPin* StructTypePin = FindPinChecked(FName("StructType"), EGPD_Input);
 
 	// Validate type selection
-	if (StructTypePin->PinType.PinSubCategoryObject == nullptr)
+	UScriptStruct* SelectedStruct = StructType;
+	if (StructTypePin->DefaultObject)
 	{
-		CompilerContext.MessageLog.Error(TEXT("@@ requires a Struct Type to be selected"), this);
+		SelectedStruct = Cast<UScriptStruct>(StructTypePin->DefaultObject);
+	}
+	else if (!StructTypePin->DefaultValue.IsEmpty())
+	{
+		FString Path = StructTypePin->DefaultValue;
+		SelectedStruct = FindObject<UScriptStruct>(nullptr, *Path, true);
+		if (!SelectedStruct)
+		{
+			SelectedStruct = LoadObject<UScriptStruct>(nullptr, *Path);
+		}
+	}
+
+	if (StructTypePin->LinkedTo.Num() == 0 && SelectedStruct == nullptr)
+	{
+		CompilerContext.MessageLog.Error(TEXT("@@ requires a Struct Type to be selected in Details or connected via Pin"), this);
 		BreakAllNodeLinks();
 		return;
 	}
@@ -63,29 +105,22 @@ void UK2Node_LoadStructFromArchive::ExpandNode(FKismetCompilerContext& CompilerC
 	UEdGraphPin* CallExec = Call->GetExecPin();
 	UEdGraphPin* CallThen = Call->GetThenPin();
 	UEdGraphPin* CallKey = Call->FindPinChecked(FName("Key"));
-	UEdGraphPin* CallStruct = Call->FindPinChecked(FName("OutStruct"));
 	UEdGraphPin* CallStructType = Call->FindPinChecked(FName("StructType"));
 	UEdGraphPin* CallIsValid = Call->FindPinChecked(FName("bIsValid"));
 
-	Schema->TryCreateConnection(ExecPin, CallExec);
-	Schema->TryCreateConnection(KeyPin, CallKey);
 	// propagate struct type from input type pin to output and call pin
-	StructOutPin->PinType = StructTypePin->PinType;
+	CallStructType->PinType = StructOutPin->PinType;
 
-	CallStruct->PinType = StructOutPin->PinType;
-	Schema->TryCreateConnection(StructOutPin, CallStruct);
-	// set StructType default object for DeterminesOutputType
-	if (UScriptStruct* SelectedStruct = Cast<UScriptStruct>(StructTypePin->PinType.PinSubCategoryObject))
-	{
-		CallStructType->DefaultObject = SelectedStruct;
-	}
+	CompilerContext.MovePinLinksToIntermediate(*ExecPin, *CallExec);
+	CompilerContext.MovePinLinksToIntermediate(*KeyPin, *CallKey);
+	CompilerContext.MovePinLinksToIntermediate(*StructOutPin, *CallStructType);
 
 	UK2Node_IfThenElse* Branch = CompilerContext.SpawnIntermediateNode<UK2Node_IfThenElse>(this, SourceGraph);
 	Branch->AllocateDefaultPins();
 	Schema->TryCreateConnection(CallThen, Branch->GetExecPin());
 	Schema->TryCreateConnection(CallIsValid, Branch->GetConditionPin());
-	Schema->TryCreateConnection(Branch->GetThenPin(), SucceededPin);
-	Schema->TryCreateConnection(Branch->GetElsePin(), FailedPin);
+	CompilerContext.MovePinLinksToIntermediate(*SucceededPin, *Branch->GetThenPin());
+	CompilerContext.MovePinLinksToIntermediate(*FailedPin, *Branch->GetElsePin());
 
 	BreakAllNodeLinks();
 }
@@ -93,22 +128,86 @@ void UK2Node_LoadStructFromArchive::ExpandNode(FKismetCompilerContext& CompilerC
 void UK2Node_LoadStructFromArchive::ReconstructNode()
 {
 	Super::ReconstructNode();
-	if (UEdGraphPin* StructTypePin = FindPin(FName("StructType"), EGPD_Input))
-	{
-		if (UEdGraphPin* StructOutPin = FindPin(FName("Struct"), EGPD_Output))
-		{
-			StructOutPin->PinType = StructTypePin->PinType;
-		}
-	}
 }
 
 void UK2Node_LoadStructFromArchive::ReallocatePinsDuringReconstruction(TArray<UEdGraphPin*>& OldPins)
 {
 	Super::ReallocatePinsDuringReconstruction(OldPins);
-	UEdGraphPin* NewStructTypePin = FindPin(FName("StructType"), EGPD_Input);
-	UEdGraphPin* NewStructOutPin = FindPin(FName("Struct"), EGPD_Output);
-	if (NewStructTypePin && NewStructOutPin)
+}
+
+void UK2Node_LoadStructFromArchive::RefreshOutputStructType()
+{
+	UEdGraphPin* StructTypePin = FindPin(FName("StructType"));
+	UEdGraphPin* StructOut = FindPin(FName("Struct"));
+
+	if (StructTypePin && StructOut)
 	{
-		NewStructOutPin->PinType = NewStructTypePin->PinType;
+		UScriptStruct* SelectedStruct = nullptr;
+
+		// 1. Check Connection
+		if (StructTypePin->LinkedTo.Num() > 0)
+		{
+			// Wildcard if connected
+		}
+		// 2. Check Pin Default Object
+		else if (StructTypePin->DefaultObject)
+		{
+			SelectedStruct = Cast<UScriptStruct>(StructTypePin->DefaultObject);
+		}
+		// 3. Fallback to Property
+		if (!SelectedStruct && StructType)
+		{
+			SelectedStruct = StructType;
+		}
+
+		// Apply
+		if (SelectedStruct && StructTypePin->LinkedTo.Num() == 0)
+		{
+			if (StructOut->PinType.PinSubCategoryObject != SelectedStruct)
+			{
+				if (StructOut->SubPins.Num() > 0)
+				{
+					GetSchema()->RecombinePin(StructOut);
+				}
+
+				StructOut->PinType.PinCategory = UEdGraphSchema_K2::PC_Struct;
+				StructOut->PinType.PinSubCategoryObject = SelectedStruct;
+			}
+		}
+		else
+		{
+			if (StructOut->PinType.PinCategory != UEdGraphSchema_K2::PC_Wildcard)
+			{
+				StructOut->PinType.PinCategory = UEdGraphSchema_K2::PC_Wildcard;
+				StructOut->PinType.PinSubCategoryObject = nullptr;
+			}
+		}
+	}
+}
+
+void UK2Node_LoadStructFromArchive::NotifyPinConnectionListChanged(UEdGraphPin* Pin)
+{
+	Super::NotifyPinConnectionListChanged(Pin);
+	if (Pin->PinName == FName("StructType"))
+	{
+		RefreshOutputStructType();
+	}
+}
+
+void UK2Node_LoadStructFromArchive::PinDefaultValueChanged(UEdGraphPin* Pin)
+{
+	Super::PinDefaultValueChanged(Pin);
+	if (Pin->PinName == FName("StructType"))
+	{
+		RefreshOutputStructType();
+	}
+}
+
+void UK2Node_LoadStructFromArchive::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UK2Node_LoadStructFromArchive, StructType))
+	{
+		ReconstructNode();
 	}
 }

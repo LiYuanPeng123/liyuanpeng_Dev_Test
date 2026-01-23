@@ -1,8 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "AIController.h"
 #include "CancerCharacter.h"
+#include "CancerCharacterSubsystem.h"
 #include "Actions/CancerCreatorActionBase.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
@@ -23,7 +26,10 @@ public:
 	{
 		for (auto Action : ActionArray)
 		{
-			Action->PostExecuteAction(Actor);
+			if (Action)
+			{
+				Action->PostExecuteAction(Actor);
+			}
 		}
 	}
 
@@ -31,7 +37,10 @@ public:
 	{
 		for (auto Action : ActionArray)
 		{
-			Action->PreExecuteAction(Actor);
+			if (Action)
+			{
+				Action->PreExecuteAction(Actor);
+			}
 		}
 	}
 
@@ -39,7 +48,10 @@ public:
 	{
 		for (auto Action : ActionArray)
 		{
-			Action->PreInitComponent();
+			if (Action)
+			{
+				Action->PreInitComponent();
+			}
 		}
 	}
 
@@ -47,7 +59,10 @@ public:
 	{
 		for (auto Action : ActionArray)
 		{
-			Action->PostInitComponent();
+			if (Action)
+			{
+				Action->PostInitComponent();
+			}
 		}
 	}
 
@@ -55,16 +70,40 @@ public:
 	{
 		for (auto Action : ActionArray)
 		{
-			Action->FinalizeAfterComponent();
+			if (Action)
+			{
+				Action->FinalizeAfterComponent();
+			}
 		}
 	}
 
-	void Destroy(AActor* Actor)
+	// 建议使用 Cleanup 替代 Destroy，避免歧义
+	void Cleanup(AActor* Actor)
 	{
 		for (auto Action : ActionArray)
 		{
-			Action->PreDestroyAction(Actor);
-			Action->PostDestroyAction(Actor);
+			if (Action)
+			{
+				Action->PreDestroyAction(Actor);
+				Action->PostDestroyAction(Actor);
+			}
+		}
+	}
+
+	UE_DEPRECATED(5.0, "Please use Cleanup() instead to avoid confusion with UObject::Destroy")
+	void Destroy(AActor* Actor)
+	{
+		Cleanup(Actor);
+	}
+
+	void GatherSoftReferences(TArray<FSoftObjectPath>& OutPaths) const
+	{
+		for (auto Action : ActionArray)
+		{
+			if (Action)
+			{
+				Action->GatherSoftReferences(OutPaths);
+			}
 		}
 	}
 };
@@ -79,92 +118,56 @@ public:
 	TSoftClassPtr<ACancerCharacter> PawnClass;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", DisplayName = "AI控制器")
-	TSoftClassPtr<AAIController> CustomAIControllerClass;
+	TSoftClassPtr<AAIController> CustomControllerClass;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category= Action, DisplayName="默认Actions")
+	//身份证
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= Action, DisplayName="身份证")
+	FGameplayTagContainer Identify;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= Action, DisplayName="默认Actions")
 	TArray<UAction_DataAssetTemplate*> TemplateActions;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced,Category= Action, DisplayName="ActionArray")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, Category= Action, DisplayName="ActionArray")
 	TArray<TObjectPtr<class UCancerCreatorActionBase>> ActionArray;
-
+	
 	void PostExecute(AActor* Actor)
 	{
-		for (auto Action : TemplateActions)
+		ForEachAction([Actor](auto* Action) { Action->PostExecuteAction(Actor); });
+		
+		if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Actor))
 		{
-			if (Action)
-			Action->PostExecuteAction(Actor);
-		}
-		for (auto Action : ActionArray)
-		{
-			if (Action)
-			Action->PostExecuteAction(Actor);
+			ASC->AddLooseGameplayTags(Identify);
 		}
 	}
 
 	void PreExecute(AActor* Actor)
 	{
-		for (auto TemplateAction : TemplateActions)
-		{
-			if (TemplateAction)
-			TemplateAction->PreExecuteAction(Actor);
-		}
-		for (auto Action : ActionArray)
-		{
-			if (Action)
-			Action->PreExecuteAction(Actor);
-		}
+		ForEachAction([Actor](auto* Action) { Action->PreExecuteAction(Actor); });
 	}
 
 	void PreInitComponent()
 	{
-		for (auto TemplateAction : TemplateActions)
-		{
-			if (TemplateAction)
-			TemplateAction->PreInitComponent();
-		}
-		for (auto Action : ActionArray)
-		{
-			if (Action)
-			Action->PreInitComponent();
-		}
+		ForEachAction([](auto* Action) { Action->PreInitComponent(); });
 	}
 
 	void PostInitComponent()
 	{
-		for (auto TemplateAction : TemplateActions)
-		{
-			if (TemplateAction)
-			TemplateAction->PostInitComponent();
-		}
-		for (auto Action : ActionArray)
-		{
-			if (Action)
-			Action->PostInitComponent();
-		}
+		ForEachAction([](auto* Action) { Action->PostInitComponent(); });
 	}
 
 	void FinalizeAfterComponent()
 	{
-		for (auto TemplateAction : TemplateActions)
-		{
-			if (TemplateAction)
-			TemplateAction->FinalizeAfterComponent();
-		}
-		for (auto Action : ActionArray)
-		{
-			if (Action)
-			Action->FinalizeAfterComponent();
-		}
+		ForEachAction([](auto* Action) { Action->FinalizeAfterComponent(); });
 	}
 
-
-	void Destroy(AActor* Actor)
+	void Cleanup(AActor* Actor)
 	{
-		for (auto Action : TemplateActions)
+		// Template 使用 Cleanup
+		for (auto Template : TemplateActions)
 		{
-			if (Action)
-			Action->Destroy(Actor);
+			if (Template) Template->Cleanup(Actor);
 		}
+		// Action 使用 Pre/Post Destroy
 		for (auto Action : ActionArray)
 		{
 			if (Action)
@@ -172,17 +175,33 @@ public:
 				Action->PreDestroyAction(Actor);
 				Action->PostDestroyAction(Actor);
 			}
-			
 		}
+	}
+
+	UE_DEPRECATED(5.0, "Please use Cleanup() instead")
+	void Destroy(AActor* Actor)
+	{
+		Cleanup(Actor);
 	}
 
 	void GatherSoftReferences(TArray<FSoftObjectPath>& OutPaths) const
 	{
+		// 1. 收集自身的软引用
+		if (!PawnClass.IsNull())
+		{
+			OutPaths.Add(PawnClass.ToSoftObjectPath());
+		}
+		if (!CustomControllerClass.IsNull())
+		{
+			OutPaths.Add(CustomControllerClass.ToSoftObjectPath());
+		}
+
+		// 2. 收集 Actions 的软引用
 		for (auto Template : TemplateActions)
 		{
-			for (auto Action : Template->ActionArray)
+			if (Template)
 			{
-				Action->GatherSoftReferences(OutPaths);
+				Template->GatherSoftReferences(OutPaths);
 			}
 		}
 		for (auto Action : ActionArray)
@@ -196,27 +215,7 @@ public:
 
 	bool StartAsyncLoadAndExecute(AActor* Actor, FSimpleDelegate OnCompleted = FSimpleDelegate())
 	{
-		TArray<FSoftObjectPath> Paths;
-		GatherSoftReferences(Paths);
-		if (Paths.Num() == 0)
-		{
-			PreExecute(Actor);
-			PostExecute(Actor);
-			if (OnCompleted.IsBound()) OnCompleted.Execute();
-			return true;
-		}
-		TWeakObjectPtr<AActor> WeakActor = Actor;
-		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
-		TSharedPtr<FStreamableHandle> Handle = Streamable.RequestAsyncLoad(Paths, FStreamableDelegate::CreateLambda(
-			                                                                   [WeakActor, this, OnCompleted]() mutable
-			                                                                   {
-				                                                                   if (!WeakActor.IsValid()) return;
-				                                                                   PreExecute(WeakActor.Get());
-				                                                                   PostExecute(WeakActor.Get());
-				                                                                   if (OnCompleted.IsBound())
-					                                                                   OnCompleted.Execute();
-			                                                                   }));
-		return Handle.IsValid();
+		return StartAsyncLoadAndExecuteWithHandle(Actor, OnCompleted).IsValid();
 	}
 
 	TSharedPtr<FStreamableHandle> StartAsyncLoadAndExecuteWithHandle(AActor* Actor,
@@ -224,6 +223,7 @@ public:
 	{
 		TArray<FSoftObjectPath> Paths;
 		GatherSoftReferences(Paths);
+		
 		if (Paths.Num() == 0)
 		{
 			PreExecute(Actor);
@@ -231,17 +231,45 @@ public:
 			if (OnCompleted.IsBound()) OnCompleted.Execute();
 			return nullptr;
 		}
+		
 		TWeakObjectPtr<AActor> WeakActor = Actor;
+		TWeakObjectPtr<UAction_DataAsset> WeakThis(this);
+		
+		if (UWorld* World = Actor->GetWorld())
+		{
+			UCancerCharacterSubsystem* CharacterSubsystem =  World->GetSubsystem<UCancerCharacterSubsystem>();
+			if (CharacterSubsystem)
+			{
+				CharacterSubsystem->AddCharacter(Actor);
+			}
+		}
+		
 		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
 		TSharedPtr<FStreamableHandle> Handle = Streamable.RequestAsyncLoad(Paths, FStreamableDelegate::CreateLambda(
-			                                                                   [WeakActor, this, OnCompleted]() mutable
+			                                                                   [WeakActor, WeakThis, OnCompleted]()
 			                                                                   {
-				                                                                   if (!WeakActor.IsValid()) return;
-				                                                                   PreExecute(WeakActor.Get());
-				                                                                   PostExecute(WeakActor.Get());
+				                                                                   if (!WeakActor.IsValid() || !WeakThis.IsValid()) return;
+				                                                                   WeakThis->PreExecute(WeakActor.Get());
+				                                                                   WeakThis->PostExecute(WeakActor.Get());
 				                                                                   if (OnCompleted.IsBound())
 					                                                                   OnCompleted.Execute();
 			                                                                   }));
 		return Handle;
+	}
+
+private:
+	// 模板辅助函数，消除重复遍历逻辑
+	// Func 接受 (UAction_DataAssetTemplate* 或 UCancerCreatorActionBase*)
+	template<typename FuncType>
+	void ForEachAction(FuncType Func)
+	{
+		for (auto TemplateAction : TemplateActions)
+		{
+			if (TemplateAction) Func(TemplateAction);
+		}
+		for (const auto& Action : ActionArray)
+		{
+			if (Action) Func(Action.Get());
+		}
 	}
 };

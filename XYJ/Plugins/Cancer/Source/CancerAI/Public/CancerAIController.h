@@ -1,7 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CancerAITypes.h"
 #include "CancerBaseAIController.h"
+#include "CancerCoreFunctionLibrary.h"
+#include "Abilities/GameplayAbilityTypes.h"
 #include "BehaviorTree/Blackboard/BlackboardKey.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "Perception/AIPerceptionConfigAsset.h"
@@ -36,9 +39,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type reason) override;
-
 	
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cancer")
 	TObjectPtr<class UBehaviorTree> BehaviorTree;
 
@@ -62,7 +63,6 @@ public:
 	void SetAICombatStateBK(EAICombatState state);
 	EAICombatState GetAICombatStateBK() const;
 #pragma endregion
-
 	UFUNCTION(BlueprintCallable, Category = "Cancer | Target")
 	void SetTarget(AActor* target);
 	UFUNCTION(BlueprintPure, Category = "Cancer | Target")
@@ -72,7 +72,7 @@ public:
 
 	// 请求更换一个目标：从当前感知组件中选择最近的目标，若成功返回true
 	UFUNCTION(BlueprintCallable, Category = "Cancer | Target")
-	bool RequestAnotherTarget();
+	bool RequestAnotherTarget( TArray<FCancerQueryMatch> TagQuery);
 
 	// 超过该距离判定为丢失目标
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cancer | Combat")

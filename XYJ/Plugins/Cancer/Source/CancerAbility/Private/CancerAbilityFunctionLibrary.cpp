@@ -219,6 +219,38 @@ TArray<FAbilityInfo> UCancerAbilityFunctionLibrary::K2_GetAbilityInfoFromActor(A
 	return AbilityArray;
 }
 
+FGameplayTag UCancerAbilityFunctionLibrary::NormalizeToSegments(const FGameplayTag& Tag, int32 Number, bool bForward)
+{
+	if (!Tag.IsValid()) return FGameplayTag();
+	const FString TagString = Tag.ToString();
+	TArray<FString> Parts;
+	TagString.ParseIntoArray(Parts, TEXT("."), true);
+	if (Parts.Num() < Number)
+		return FGameplayTag();
+
+	FString ResultString;
+	if (bForward)
+	{
+		for (int32 i = 0; i < Number; ++i)
+		{
+			if (i != 0)
+				ResultString += TEXT(".");
+			ResultString += Parts[i];
+		}
+	}
+	else
+	{
+		for (int32 i = Parts.Num() - Number; i < Parts.Num(); ++i)
+		{
+			if (!ResultString.IsEmpty())
+				ResultString += TEXT(".");
+			ResultString += Parts[i];
+		}
+	}
+
+	return FGameplayTag::RequestGameplayTag(FName(*ResultString));
+}
+
 
 bool UCancerAbilityFunctionLibrary::K2_ApplyDamage_SetByCaller(
 	AActor* Target,

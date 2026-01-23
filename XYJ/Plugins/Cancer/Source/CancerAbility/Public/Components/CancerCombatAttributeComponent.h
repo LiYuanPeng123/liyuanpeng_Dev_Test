@@ -130,28 +130,7 @@ public:
 	virtual void StartDeath(const FGameplayEventData& EventData);
 
 	virtual void FinishDeath(const FGameplayEventData& EventData);
-
-
-protected:
-	UPROPERTY()
-	TObjectPtr<UCancerAbilitySystemComponent> AbilitySystemComponent;
-	UPROPERTY()
-	TObjectPtr<const UCancerHealthSet> HealthSet;
-	UPROPERTY()
-	TObjectPtr<const UCancerCombatSet> CombatSet;
-	UPROPERTY()
-	TObjectPtr<const UCancerSoulSet> SoulSet;
-	UPROPERTY()
-	TObjectPtr<const UCancerProgressionSet> ProgressionSet;
-	UPROPERTY()
-	TObjectPtr<const UCancerEnergySet> EnergySet;
-	UPROPERTY()
-	TObjectPtr<const UCancerStaminaSet> StaminaSet;
-
-
-	UPROPERTY()
-	ECancerDeathState DeathState;
-
+	
 	UPROPERTY(BlueprintAssignable)
 	FOnDeathEvent OnDeathStarted;
 	UPROPERTY(BlueprintAssignable)
@@ -202,6 +181,29 @@ protected:
 	FAttributeChanged OnImpactChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Cancer|Combat")
 	FAttributeChanged OnIronBodyChanged;
+
+
+protected:
+	UPROPERTY()
+	TObjectPtr<UCancerAbilitySystemComponent> AbilitySystemComponent;
+	UPROPERTY()
+	TObjectPtr<const UCancerHealthSet> HealthSet;
+	UPROPERTY()
+	TObjectPtr<const UCancerCombatSet> CombatSet;
+	UPROPERTY()
+	TObjectPtr<const UCancerSoulSet> SoulSet;
+	UPROPERTY()
+	TObjectPtr<const UCancerProgressionSet> ProgressionSet;
+	UPROPERTY()
+	TObjectPtr<const UCancerEnergySet> EnergySet;
+	UPROPERTY()
+	TObjectPtr<const UCancerStaminaSet> StaminaSet;
+
+
+	UPROPERTY()
+	ECancerDeathState DeathState;
+
+	
 
 
 	virtual void HandleHealthChanged(AActor* DamageInstigator, AActor* DamageCauser,

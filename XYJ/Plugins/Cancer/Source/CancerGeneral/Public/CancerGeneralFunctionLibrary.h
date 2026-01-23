@@ -70,4 +70,5 @@ public:
 	static void SetRHI(const ERHI& Value);
 	UFUNCTION(BlueprintCallable, Category=General, DisplayName="获取RHI")
 	static ERHI GetRHI();
+	
 };

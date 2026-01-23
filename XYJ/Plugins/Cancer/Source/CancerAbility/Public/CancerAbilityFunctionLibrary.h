@@ -258,6 +258,10 @@ public:
 
 #pragma endregion
 
+	//拼接Tag
+	UFUNCTION(BlueprintPure)
+	static FGameplayTag NormalizeToSegments(const FGameplayTag& Tag,int32 Number = 1,bool bForward = true);
+
 	UFUNCTION(BlueprintCallable,Category="Cancer|Ability",meta=(Latent,WorldContext="WorldContextObject",ExpandEnumAsExecs="CoutDownOutput"))
 	static void CountDown(const UObject* WorldContextObject,float TotalTime,float UpdateInterval,float&OutRemainingTime,
 		ECoutDownInput CoutDownInput,ECoutDownOutput& CoutDownOutput,FLatentActionInfo LatentInfo);

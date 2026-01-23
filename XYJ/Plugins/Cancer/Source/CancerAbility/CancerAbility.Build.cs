@@ -50,7 +50,8 @@ public class CancerAbility : ModuleRules
 				"EngineCameras",
 				"GameplayCameras",
 				"TemplateSequence",
-				"LevelSequence"
+				"LevelSequence", 
+				"CancerUIExtension"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -70,7 +71,6 @@ public class CancerAbility : ModuleRules
 				"CancerAnimation",
 				"CancerActorPool",
 				"CancerInput", 
-				"CancerUIExtension", 
 				"CancerTeam", 
 				"CancerLockTarget",
 				"CancerInventory"

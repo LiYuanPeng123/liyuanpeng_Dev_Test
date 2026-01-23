@@ -34,7 +34,8 @@ public class CancerGameplay : ModuleRules
 				"CancerCamera", 
 				"CancerTeam",
 				"AIModule",
-				"CancerAbility"
+				"CancerAbility",
+				"CancerCore"
 			}
 			);
 			
@@ -46,7 +47,6 @@ public class CancerGameplay : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore", 
-				"CancerAbility"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
