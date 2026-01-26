@@ -31,6 +31,16 @@
 			"LoadingPhase": "Default"
 		},
 		{
+			"Name": "CancerStateMachine",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "CancerStateMachineEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		},
+		{
 			"Name": "CancerLoadingScreen",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"

@@ -37,11 +37,21 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 MaxExecuteIndex = 3;
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	FName OrientDefaultSection = FName("B");
+
+	UPROPERTY()
+	FVector2D AerialPitchOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Evade")
+	float MaxAerialPitchOffset = 45.0f;
+
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	FName WarpName;
 	UPROPERTY()
 	FVector StartAccel2D;
+
 
 private:
 };

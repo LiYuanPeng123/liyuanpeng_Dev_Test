@@ -32,6 +32,8 @@
 		"CancerMessageNodes": "UnrealEditor-CancerMessageNodes.dll",
 		"CancerMessageRuntime": "UnrealEditor-CancerMessageRuntime.dll",
 		"CancerNumberPop": "UnrealEditor-CancerNumberPop.dll",
+		"CancerStateMachine": "UnrealEditor-CancerStateMachine.dll",
+		"CancerStateMachineEditor": "UnrealEditor-CancerStateMachineEditor.dll",
 		"CancerTeam": "UnrealEditor-CancerTeam.dll",
 		"CancerTrigger": "UnrealEditor-CancerTrigger.dll",
 		"CancerUI": "UnrealEditor-CancerUI.dll",

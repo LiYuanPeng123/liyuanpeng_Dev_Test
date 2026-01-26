@@ -103,6 +103,11 @@ UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_State_InvulnerableWindow, "Combat.State.Invuln
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_InvulnerableWindow_Start, "Combat.Event.InvulnerableWindow.Start");
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_InvulnerableWindow_Stop, "Combat.Event.InvulnerableWindow.Stop");
 
+//无敌帧检测事件标签
+UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_State_AvoidWindow, "Combat.State.AvoidWindow");
+UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AvoidWindow_Start, "Combat.Event.AvoidWindow.Start");
+UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AvoidWindow_Stop, "Combat.Event.AvoidWindow.Stop");
+
 //Gameplay
 UE_DEFINE_GAMEPLAY_TAG(Tag_Gameplay_DamageSelfDestruct, TEXT("Gameplay.Gameplay.DamageSelfDestruct"));
 
@@ -125,6 +130,7 @@ UE_DEFINE_GAMEPLAY_TAG(SetByCaller_Exp, TEXT("SetByCaller.Exp"));
 UE_DEFINE_GAMEPLAY_TAG(GameplayCue_HitNumber, TEXT("GameplayCue.HitNumber"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_GameplayCue_Block, TEXT("GameplayCue.Block"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_GameplayCue_Invulnerable, TEXT("GameplayCue.Invulnerable"));
+UE_DEFINE_GAMEPLAY_TAG(Tag_GameplayCue_Avoid, TEXT("GameplayCue.Avoid"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_GameplayCue_PerfectBlock, TEXT("GameplayCue.PerfectBlock"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_GameplayCue_Damage, TEXT("GameplayCue.Damage"));
 
@@ -156,6 +162,7 @@ UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AbilityTrigger_DamageFeedback,
                        TEXT("Combat.Event.AbilityTrigger.DamageFeedback"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AbilityTrigger_Block, TEXT("Combat.Event.AbilityTrigger.Block"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AbilityTrigger_PerfectBlock, TEXT("Combat.Event.AbilityTrigger.PerfectBlock"));
+UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AbilityTrigger_Avoid, TEXT("Combat.Event.AbilityTrigger.Avoid"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AbilityTrigger_PerfectDodge, TEXT("Combat.Event.AbilityTrigger.PerfectDodge"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AbilityTrigger_Weak, TEXT("Combat.Event.AbilityTrigger.Weak"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AbilityTrigger_DrawWeapon, TEXT("Combat.Event.AbilityTrigger.DrawWeapon"));
@@ -178,6 +185,7 @@ UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_State_UnlimitedSoul, TEXT("Combat.State.Unlimi
 // 伤害反馈信息
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_DamageFeedBack_Invulnerable, TEXT("Combat.DamageFeedback.Invulnerable"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_DamageFeedBack_PerfectBlock, TEXT("Combat.DamageFeedback.PerfectBlock"));
+UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_DamageFeedBack_Avoid, TEXT("Combat.DamageFeedback.Avoid"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_DamageFeedBack_Block, TEXT("Combat.DamageFeedback.Block"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_DamageFeedBack_Kill, TEXT("Combat.DamageFeedback.Kill"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_DamageFeedBack_NoSoul, TEXT("Combat.DamageFeedback.NoSoul"));

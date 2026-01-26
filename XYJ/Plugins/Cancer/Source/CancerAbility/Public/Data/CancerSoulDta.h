@@ -10,24 +10,26 @@ USTRUCT(BlueprintType)
 struct FCancerSoulData : public FTableRowBase
 {
 	GENERATED_BODY()
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="虚弱硬直")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "虚弱", DisplayName="虚弱硬直")
 	FCancerStaggerInfo StaggerInfo;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="回复气力的参数")
-	TMap<ECancerHitType, FVector> ReplyValueMaps;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="能被震脱武器")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "虚弱", DisplayName="能被震脱武器")
 	bool bIsUnequipWeapon = true;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="伤害增幅倍率")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "虚弱", DisplayName="伤害增幅倍率")
 	float DamageCoefficient = 2.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="虚弱时长")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "虚弱", DisplayName="虚弱时长")
 	float WeakTime = 2.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="虚弱结束回满气力的时间")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "虚弱", DisplayName="虚弱结束回满气力的时间")
 	float SoulReplyTime = 1.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="回复气力时间")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "虚弱", DisplayName="回复气力时间")
 	float ReplyTime = 2.f;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="格挡免疫", meta=(ClampMin = 0, ClampMax = 1))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "气力", DisplayName="回复气力的参数")
+	TMap<ECancerHitType, FVector> ReplyValueMaps;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere,Category = "气力", DisplayName="格挡免疫", meta=(ClampMin = 0, ClampMax = 1))
 	float SoulBonusPct = 0.5f;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="弹反气力伤害系数", meta=(ClampMin = 0))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere,Category = "气力", DisplayName="弹反气力伤害系数", meta=(ClampMin = 0))
 	float PerfectBlockDamageSoul = 2.f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere,Category = "跳踩", DisplayName="跳踩气力恢复系数", meta=(ClampMin = 0))
+	float AvoidDamageSoul = 2.f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly ,Category="战斗参数配置",
 		meta = (RequiredAssetDataTags = "RowStructure=/Script/CancerAbility.CombatImpactCosmeticsTableRow"))

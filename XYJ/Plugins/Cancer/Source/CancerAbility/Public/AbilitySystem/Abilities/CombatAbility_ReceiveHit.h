@@ -27,6 +27,8 @@ public:
 	FOnReceiveHit ReceivePerfectBlock;
 	UPROPERTY(BlueprintAssignable)
 	FOnReceiveHit ReceiveInvulnerable;
+	UPROPERTY(BlueprintAssignable)
+	FOnReceiveHit ReceiveAvoid;
 
 	UCombatAbility_ReceiveHit(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
@@ -50,6 +52,8 @@ public:
 	void HandleReceivePerfectBlock(const FGameplayEventData& Payload);
 	UFUNCTION(BlueprintNativeEvent)
 	void HandleReceiveInvulnerable(const FGameplayEventData& Payload);
+	UFUNCTION(BlueprintNativeEvent)
+	void HandleReceiveAvoid(const FGameplayEventData& Payload);
 
 	void SendDamageFeedback(const UCancerDamageType* DamageInfo,const FGameplayTagContainer& FeedBackInfo);
 	

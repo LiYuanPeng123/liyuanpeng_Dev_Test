@@ -1,5 +1,6 @@
 #include "AbilitySystem/Abilities/CombatAbility_Evade.h"
 #include "AbilitySystemComponent.h"
+#include "CancerAbilitySystemComponent.h"
 #include "CancerNativeGamePlayTag.h"
 #include "Components/CancerMotionWarpingComponent.h"
 
@@ -40,17 +41,44 @@ void UCombatAbility_Evade::OnAnimationFinished_Implementation()
 void UCombatAbility_Evade::OnAnimationStarted_Implementation()
 {
 	Super::OnAnimationStarted_Implementation();
-	if (auto MotionComponent = GetMotionWarpingComponentFromActorInfo())
+	auto ASC = GetCancerAbilitySystemComponentFromActorInfo();
+	auto MotionComponent = GetMotionWarpingComponentFromActorInfo();
+	if (!MotionComponent || !ASC) return;
+	
+	MotionComponent->RemoveWarpTarget(WarpName);
+
+	if (ASC->HasTag(Movement_Falling) || ASC->HasTag(Movement_Flying))
 	{
-		MotionComponent->RemoveWarpTarget(WarpName);
+		//空中
+		if (auto PC = GetController<APlayerController>())
+		{
+			float CameraPitch = FRotator::NormalizeAxis(PC->GetControlRotation().Pitch);
+
+			float ControllerYaw = PC->GetControlRotation().Yaw;
+			float InputYaw = StartAccel2D.Rotation().Yaw;
+			float DeltaYaw = FMath::Abs(FMath::FindDeltaAngleDegrees(ControllerYaw, InputYaw));
+			bool bIsBackward = DeltaYaw > 90.0f;
+			if (!StartAccel2D.IsNearlyZero())
+			{
+				bIsBackward = true;
+			}
+
+			float AppliedPitch = bIsBackward ? -CameraPitch : CameraPitch;
+			AppliedPitch = FMath::Clamp(AppliedPitch, -MaxAerialPitchOffset, MaxAerialPitchOffset);
+
+			FRotator TargetRot(AppliedPitch, InputYaw, 0.f);
+			MotionComponent->AddOrUpdateWarpTargetFromLocationAndRotation(WarpName, FVector::ZeroVector, TargetRot);
+		}
+	}
+	else
+	{
+		//地面
 		auto Rotation = GetOwningActorFromActorInfo()->GetActorRotation();
 		if (!StartAccel2D.IsNearlyZero())
 		{
-			
-				Rotation.Yaw = StartAccel2D.Rotation().Yaw;
-				MotionComponent->AddOrUpdateWarpTargetFromLocationAndRotation(
-					WarpName, FVector::ZeroVector, Rotation);
-			
+			Rotation.Yaw = StartAccel2D.Rotation().Yaw;
+			MotionComponent->AddOrUpdateWarpTargetFromLocationAndRotation(
+				WarpName, FVector::ZeroVector, Rotation);
 		}
 	}
 }
@@ -64,8 +92,8 @@ void UCombatAbility_Evade::AbilityInputStarted_Implementation()
 		StartAccel2D = Movement->GetCurrentAcceleration().GetSafeNormal2D();
 		bOrientToMovement = Movement->GetCurrentRotationMode();
 	}
-	FName Section = bOrientToMovement ? FName("F") : GetLockTargetSectionName(StartAccel2D);
- 	if (InputIndex == 1)
+	FName Section = bOrientToMovement ? OrientDefaultSection : GetLockTargetSectionName(StartAccel2D);
+	if (InputIndex == 1)
 	{
 		SetupAndPlayAnimation(GetMontage(), Section);
 		ExecuteIndex++;

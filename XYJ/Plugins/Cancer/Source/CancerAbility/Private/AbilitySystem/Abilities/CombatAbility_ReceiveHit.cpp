@@ -79,16 +79,24 @@ void UCombatAbility_ReceiveHit::HandleEventReceived_Implementation(FGameplayEven
 		return;
 	}
 
+	const bool bHasAvoidWindow = TargetASC->HasMatchingGameplayTag(Tag_Combat_State_AvoidWindow);
 	const bool bHasInvulnerableWindow = TargetASC->HasMatchingGameplayTag(Tag_Combat_State_InvulnerableWindow);
 	const bool bHasPerfectBlockWindow = TargetASC->HasMatchingGameplayTag(Tag_Combat_State_PerfectBlockWindow);
 	const bool bHasBlockWindow = TargetASC->HasMatchingGameplayTag(Tag_Combat_State_BlockWindow);
 
 	FCancerHitEffectInfo HitEffectInfo = DamageType->GetHitEffectInfo();
 	// 与伤害类型的对比：为 true 表示“会被该帧影响”（即不能无视）
+	const bool bAffectedByAvoid = bHasAvoidWindow && HitEffectInfo.bAvoid;
 	const bool bAffectedByInvulnerable = bHasInvulnerableWindow && HitEffectInfo.bInvincible;
 	const bool bAffectedByPerfectBlock = bHasPerfectBlockWindow && HitEffectInfo.bReflected;
 	const bool bAffectedByBlock = bHasBlockWindow && HitEffectInfo.bBlocked;
-
+	//跳踩
+	if (bAffectedByAvoid)
+	{
+		HandleReceiveAvoid(Payload);
+		ReceiveAvoid.Broadcast(Payload);
+		return;
+	}
 	//免疫
 	if (bAffectedByInvulnerable)
 	{
@@ -117,6 +125,75 @@ void UCombatAbility_ReceiveHit::HandleEventReceived_Implementation(FGameplayEven
 	K2_EndAbility();
 }
 
+void UCombatAbility_ReceiveHit::HandleReceiveAvoid_Implementation(const FGameplayEventData& Payload)
+{
+	const UCancerDamageType* DamageInfo = Cast<UCancerDamageType>(Payload.OptionalObject.Get());
+	if (!DamageInfo)
+	{
+		ensureMsgf(DamageInfo, TEXT("没有传递有效的DamageType"));
+		K2_EndAbility();
+	}
+
+	UCancerStaticsSubsystem::StaticPerfectBlock(GetAvatarActorFromActorInfo());
+
+	//触发受击方的跳踩技能
+	auto ASC = GetCancerAbilitySystemComponentFromActorInfo();
+	ASC->HandleGameplayEvent(Tag_Combat_Event_AbilityTrigger_Avoid, &Payload);
+
+#pragma region 执行跳踩GC
+	const AActor* Attacker = DamageInfo->GetSourceActor();
+	AActor* Victim = GetOwningActorFromActorInfo();
+	FCancerHitInfo HitInfo = DamageInfo->GetHitInfo();
+	FCancerHitEffectInfo HitEffectInfo = DamageInfo->GetHitEffectInfo();
+	FGameplayTag GCTag = HitEffectInfo.GCPerfectBlockType;
+	FGameplayCueParameters Parameters;
+	Parameters.NormalizedMagnitude = Payload.EventMagnitude;
+	Parameters.Location = HitInfo.HitResult.ImpactPoint;
+	Parameters.Normal = HitInfo.HitResult.ImpactNormal;
+	Parameters.Instigator = const_cast<AActor*>(Attacker);
+	Parameters.EffectCauser = Victim;
+	Parameters.SourceObject = DamageInfo;
+	UGameplayCueFunctionLibrary::ExecuteGameplayCueOnActor(Victim, GCTag, Parameters);
+#pragma endregion
+
+	auto AttackerASC = UCancerAbilityFunctionLibrary::
+		GetCancerAbilitySystemComponent(const_cast<AActor*>(Attacker));
+	auto AttackerAttribute = UCancerAbilityFunctionLibrary::GetCancerCombatAttributeComponent(
+		const_cast<AActor*>(Attacker));
+	if (!AttackerASC || !AttackerAttribute)
+	{
+		K2_EndAbility();
+		return;
+	}
+
+	/*//反击气力系数
+	auto SoulData = ASC->GetSoulData();
+	FVector Soul;
+	if (SoulData.ReplyValueMaps.Contains(ECancerHitType::StrikeBack))
+	{
+		Soul = *SoulData.ReplyValueMaps.Find(ECancerHitType::StrikeBack);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Default Soul Reply Params Used: %s"), *DefaultSoulReplyValue.ToString());
+		Soul = DefaultSoulReplyValue;
+	}
+
+	//弹法气力伤害系数
+	float SoulCoeff = SoulData.PerfectBlockDamageSoul;
+
+	// Create a copy of the damage info for the reflection attack to avoid mutating the original
+	UCancerDamageType* ReflectedDamageInfo = DuplicateObject<UCancerDamageType>(DamageInfo, GetTransientPackage());
+	ReflectedDamageInfo->SetSourceActor(GetOwningActorFromActorInfo());
+
+	UCancerAbilityFunctionLibrary::K2_ApplyDamage_SetByCaller(
+		const_cast<AActor*>(Attacker), ReflectedDamageInfo, Tag_Combat_Event_AbilityTrigger_ReceiveHit, 0, SoulCoeff,
+		Soul);*/
+
+	SendDamageFeedback(DamageInfo, FGameplayTagContainer(Tag_Combat_DamageFeedBack_Avoid));
+	K2_EndAbility();
+}
+
 void UCombatAbility_ReceiveHit::SendDamageFeedback(const UCancerDamageType* DamageInfo,
                                                    const FGameplayTagContainer& FeedBackInfo)
 {
@@ -124,7 +201,7 @@ void UCombatAbility_ReceiveHit::SendDamageFeedback(const UCancerDamageType* Dama
 
 	// Copy the DamageInfo to avoid modifying the original const object
 	UCancerDamageType* FeedbackDamageInfo = DuplicateObject<UCancerDamageType>(DamageInfo, GetTransientPackage());
-	
+
 	FeedbackDamageInfo->DamageParameter.DamageFeedback.DamageInfo = FeedBackInfo;
 	if (bCharacterDead)
 	{
@@ -143,7 +220,6 @@ void UCombatAbility_ReceiveHit::SendDamageFeedback(const UCancerDamageType* Dama
 	{
 		AttackerASC->HandleGameplayEvent(Tag_Combat_Event_AbilityTrigger_DamageFeedback, &EventData);
 	}
-		
 }
 
 void UCombatAbility_ReceiveHit::HandleOutofHealth(AActor* DamageInstigator, AActor* DamageCauser,
@@ -196,7 +272,8 @@ void UCombatAbility_ReceiveHit::HandleReceiveDamage_Implementation(const FGamepl
 
 	//攻击者恢复气力参数
 	FVector Soul = FVector::ZeroVector;
-	if (auto AttackerASC = UCancerAbilityFunctionLibrary::GetCancerAbilitySystemComponent(const_cast<AActor*>(Attacker)) ) 
+	if (auto AttackerASC =
+		UCancerAbilityFunctionLibrary::GetCancerAbilitySystemComponent(const_cast<AActor*>(Attacker)))
 	{
 		auto SoulData = AttackerASC->GetSoulData();
 
@@ -215,7 +292,7 @@ void UCombatAbility_ReceiveHit::HandleReceiveDamage_Implementation(const FGamepl
 			HitDamageValue *= SoulData.DamageCoefficient;
 		}
 	}
-	
+
 	//施加伤害
 	UCancerAbilityFunctionLibrary::K2_ApplyDamage_SetByCaller(
 		Victim, DamageInfo, Tag_Combat_Event_AbilityTrigger_ReceiveHit, HitDamageValue, HitSoulValue,
@@ -269,7 +346,8 @@ void UCombatAbility_ReceiveHit::HandleReceiveBlock_Implementation(const FGamepla
 	FVector Soul = FVector::ZeroVector;
 	float FinishSoul = 0.f;
 	//攻击者气力恢复参数
-	if (auto AttackerASC = UCancerAbilityFunctionLibrary::GetCancerAbilitySystemComponent(const_cast<AActor*>(Attacker)))
+	if (auto AttackerASC =
+		UCancerAbilityFunctionLibrary::GetCancerAbilitySystemComponent(const_cast<AActor*>(Attacker)))
 	{
 		auto AttackerSoulData = AttackerASC->GetSoulData();
 
@@ -286,11 +364,10 @@ void UCombatAbility_ReceiveHit::HandleReceiveBlock_Implementation(const FGamepla
 		auto VictimSoulData = AttackerASC->GetSoulData();
 		// 免疫后气力伤害 = 格挡免疫系数 * 气力伤害系数  
 		FinishSoul = VictimSoulData.SoulBonusPct * HitInfo.SoulValue;
-		
 	}
 	UCancerAbilityFunctionLibrary::K2_ApplyDamage_SetByCaller(
-			Victim, DamageInfo, Tag_Combat_Event_AbilityTrigger_ReceiveHit, 0, FinishSoul,
-			Soul);
+		Victim, DamageInfo, Tag_Combat_Event_AbilityTrigger_ReceiveHit, 0, FinishSoul,
+		Soul);
 
 #pragma region 执行格挡GC
 	FCancerHitEffectInfo HitEffectInfo = DamageInfo->GetHitEffectInfo();

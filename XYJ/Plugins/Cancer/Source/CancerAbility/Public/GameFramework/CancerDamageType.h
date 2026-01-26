@@ -53,10 +53,8 @@ struct FCancerStaggerInfo
 	float HardDuration = 0.0f;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="击退距离", meta = (ClampMin = "0.0"))
 	float KnockbackDistance = 0.0f;
-
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="命中触发目标技能Tag")
 	FGameplayTag TriggerTargetAbilityTag;
-
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="命中触发目标技能时长")
 	float TriggerTargetAbilityDuration = 0.0f;
 };
@@ -176,28 +174,37 @@ struct FCancerHitEffectInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型", DisplayName="可格挡")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|格挡", DisplayName="可格挡")
 	bool bBlocked = true;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型", meta=(EditCondition ="bBlocked"), DisplayName="格挡GC标签")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|格挡", meta=(EditCondition ="bBlocked"), DisplayName="格挡GC标签")
 	FGameplayTag GCBlockType = Tag_GameplayCue_Block;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型", meta=(EditCondition ="bBlocked"), DisplayName="格挡GC旋转")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|格挡", meta=(EditCondition ="bBlocked"), DisplayName="格挡GC旋转")
 	FRotator GCBlockRotation = FRotator::ZeroRotator;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型", DisplayName="可反击")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|弹反", DisplayName="可弹反")
 	bool bReflected = true;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型", meta=(EditCondition ="bReflected"),
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|弹反", meta=(EditCondition ="bReflected"),
 		DisplayName="弹反GC标签")
 	FGameplayTag GCPerfectBlockType = Tag_GameplayCue_PerfectBlock;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型", meta=(EditCondition ="bReflected"),
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|弹反", meta=(EditCondition ="bReflected"),
 		DisplayName="弹反GC旋转")
 	FRotator GCPerfectBlockRotation = FRotator::ZeroRotator;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型", DisplayName="可被无敌帧躲避")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|闪避", DisplayName="无敌帧躲避")
 	bool bInvincible = true;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型", meta=(EditCondition ="bInvincible"),
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|闪避", meta=(EditCondition ="bInvincible"),
 		DisplayName="闪避GC标签")
 	FGameplayTag GCInvulnerableType = Tag_GameplayCue_Invulnerable;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型", meta=(EditCondition ="bInvincible"),
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|闪避", meta=(EditCondition ="bInvincible"),
 		DisplayName="闪避GC旋转")
 	FRotator GCInvulnerableRotation = FRotator::ZeroRotator;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|踩踏", DisplayName="踩踏")
+	bool bAvoid = true;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|踩踏", meta=(EditCondition ="bInvincible"),
+		DisplayName="踩踏GC标签")
+	FGameplayTag GCAvoidType = Tag_GameplayCue_Avoid;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|踩踏", meta=(EditCondition ="bInvincible"),
+		DisplayName="踩踏GC旋转")
+	FRotator GCAvoidRotation = FRotator::ZeroRotator;
 };
 
 // 伤害命中后的反馈信息
