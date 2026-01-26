@@ -40,7 +40,7 @@ public:
 	virtual void FinalizeAfterComponent_Implementation() override;
 
 protected:
-	UPROPERTY(Instanced,  BlueprintReadOnly)
+	UPROPERTY(Instanced,  BlueprintReadOnly,EditAnywhere)
 	TArray<UCancerQuickBarInstance*> QuickBarInstances;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Grant")

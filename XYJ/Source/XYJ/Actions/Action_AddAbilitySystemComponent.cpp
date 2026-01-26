@@ -35,10 +35,6 @@ void UAction_AddAbilitySystemComponent::GatherSoftReferences(TArray<FSoftObjectP
 	{
 		OutPaths.Add(StartAbilitySet.ToSoftObjectPath());
 	}
-	if (!CombatData.IsNull())
-	{
-		OutPaths.Add(CombatData.ToSoftObjectPath());
-	}
 }
 
 void UAction_AddAbilitySystemComponent::PostInitComponent_Implementation()
@@ -64,8 +60,7 @@ void UAction_AddAbilitySystemComponent::PostInitComponent_Implementation()
 	
 
 	//设置战斗数据
-	UCancerCombatData* CombatDataPtr = CombatData.Get();
-	ASC->SetCombatData(CombatDataPtr);
+	ASC->SetCombatData(SoulData);
 }
 
 void UAction_AddAbilitySystemComponent::FinalizeAfterComponent_Implementation()

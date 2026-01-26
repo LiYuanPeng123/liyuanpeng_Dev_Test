@@ -29,7 +29,7 @@ public:
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Cancer|PawnData")
-	TSoftObjectPtr<UAction_DataAsset> PawnData;
+	TSoftObjectPtr<UAction_DataAsset> ActorData;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Preview")
 	TObjectPtr<USceneComponent> SceneRootComponent;

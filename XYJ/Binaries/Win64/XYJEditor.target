@@ -6390,6 +6390,22 @@
 			"Type": "SymbolFile"
 		},
 		{
+			"Path": "$(ProjectDir)/Plugins/Cancer/Binaries/Win64/UnrealEditor-CancerStateMachine.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Cancer/Binaries/Win64/UnrealEditor-CancerStateMachine.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Cancer/Binaries/Win64/UnrealEditor-CancerStateMachineEditor.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Cancer/Binaries/Win64/UnrealEditor-CancerStateMachineEditor.pdb",
+			"Type": "SymbolFile"
+		},
+		{
 			"Path": "$(ProjectDir)/Plugins/Cancer/Binaries/Win64/UnrealEditor-CancerTeam.dll",
 			"Type": "DynamicLibrary"
 		},

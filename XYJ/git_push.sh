@@ -5,6 +5,14 @@ PREVIEW=false   # true=只预览，不提交推送
 MAX_RETRY=5     # 每批推送最多重试次数
 SLEEP_SEC=5     # 重试前等待秒数
 
+# 获取当前分支名称
+CURRENT_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --abbrev-ref HEAD)
+if [ -z "$CURRENT_BRANCH" ]; then
+    echo "❌ 无法获取当前分支名称"
+    exit 1
+fi
+echo "当前分支: $CURRENT_BRANCH"
+
 FILES=$(git ls-files --others --modified --exclude-standard)
 TOTAL_FILES=$(echo "$FILES" | wc -l)
 echo "检测到待提交文件数量: $TOTAL_FILES"
@@ -22,7 +30,7 @@ push_with_retry() {
     local attempt=1
     while [ $attempt -le $MAX_RETRY ]; do
         echo "尝试推送 (第 $attempt/$MAX_RETRY 次)..."
-        if git push origin main; then
+        if git push origin "$CURRENT_BRANCH"; then
             echo "✅ 批次推送成功"
             return 0
         else

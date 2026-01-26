@@ -32,10 +32,7 @@ UClass* AXYJ_GameMode::GetDefaultPawnClassForController_Implementation(AControll
 {
 	if (auto Data = GetEffectivePawnData())
 	{
-		if (!Data->PawnClass.IsNull())
-		{
-			return UCancerAssetManager::Get().GetSubclass(Data->PawnClass);
-		}
+		return Data->ActorClass;
 	}
 	return Super::GetDefaultPawnClassForController_Implementation(InController);
 }
@@ -46,22 +43,6 @@ void AXYJ_GameMode::InitGame(const FString& MapName, const FString& Options, FSt
 	Super::InitGame(MapName, Options, ErrorMessage);
 
 	PawnFinish.AddDynamic(this, &ThisClass::HandPawnFinish);
-	/*UWorld* World = GetWorld();
-	if (!World) return;
-	TArray<AActor*> Creators;
-	UGameplayStatics::GetAllActorsOfClass(World, AAICreator::StaticClass(), Creators);
-	for (AActor* Creator : Creators)
-	{
-		if (auto AICreator = Cast<AAICreator>(Creator))
-		{
-			APawn* NewPawn = nullptr;
-			TSharedPtr<FStreamableHandle> Handle = AICreator->CreateCustomPlayerPawn(NewPawn);
-			if (NewPawn && Handle.IsValid())
-			{
-				PawnLoadHandles.Add(NewPawn, Handle);
-			}
-		}
-	}*/
 }
 
 void AXYJ_GameMode::BeginPlay()

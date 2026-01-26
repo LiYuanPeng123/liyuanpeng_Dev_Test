@@ -49,7 +49,7 @@ void AAICreator::OnShowTriggerEnter_Implementation(AActor* OtherActor, UPrimitiv
 	}
 	StartUnloadCheck();
 
-	UAction_DataAsset* ActionData = PawnData.LoadSynchronous();
+	UAction_DataAsset* ActionData = ActorData.LoadSynchronous();
 
 	FRotator SpawnRotation = FRotator(0, GetActorRotation().Yaw, 0);
 	FTransform SpawnTransform(SpawnRotation, StartLocation);
@@ -158,12 +158,12 @@ void AAICreator::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 #if WITH_EDITOR
-	if (!PawnData.IsNull())
+	if (!ActorData.IsNull())
 	{
-		UAction_DataAsset* Data = PawnData.LoadSynchronous();
-		if (Data && !Data->PawnClass.IsNull())
+		UAction_DataAsset* Data = ActorData.LoadSynchronous();
+		if (Data && Data->ActorClass)
 		{
-			UClass* PClass = Data->PawnClass.LoadSynchronous();
+			UClass* PClass = Data->ActorClass;
 			if (PreviewComponent)
 			{
 				if (PreviewComponent->GetChildActorClass() != PClass)
@@ -213,9 +213,13 @@ void AAICreator::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEv
 		return;
 	}
 
-	if (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(AAICreator, PawnData))
+	
+	if (PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(AAICreator, ActorData))
 	{
-		RerunConstructionScripts();
+		if (!IsTemplate() && !ActorData.IsNull() && PropertyChangedEvent.ChangeType != EPropertyChangeType::Interactive)
+		{
+			RerunConstructionScripts();
+		}
 	}
 }
 #endif

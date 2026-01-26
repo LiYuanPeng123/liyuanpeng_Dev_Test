@@ -16,16 +16,25 @@ void UAction_AddAIPerceptionComponent::GatherSoftReferences(TArray<FSoftObjectPa
 void UAction_AddAIPerceptionComponent::PostInitComponent_Implementation()
 {
     if (ACharacter* Character = Cast<ACharacter>( GetCreatActor()))
-    {
-        if (ACancerAIController* AIController = Cast<ACancerAIController>(Character->GetController()))
-        {
-            AIController->SetActivePerceptionConfig(PerceptionConfig.Get());
-            PerceptionConfig->ApplyToController(AIController);
-        	AIController->SetBehaviorTree(BehaviorTree.Get());
-        	UE_LOG(LogTemp, Log, TEXT("已设置默认行为树: %s"), *BehaviorTree->GetName());
-        	
-        }
-    }
+	{
+		if (ACancerAIController* AIController = Cast<ACancerAIController>(Character->GetController()))
+		{
+			if (IsValid(AIController))
+			{
+				if (UAIPerceptionConfigAsset* Config = PerceptionConfig.Get())
+				{
+					AIController->SetActivePerceptionConfig(Config);
+					Config->ApplyToController(AIController);
+				}
+
+				if (UBehaviorTree* BT = BehaviorTree.Get())
+				{
+					AIController->SetBehaviorTree(BT);
+					UE_LOG(LogTemp, Log, TEXT("已设置默认行为树: %s"), *BT->GetName());
+				}
+			}
+		}
+	}
 }
 
 void UAction_AddAIPerceptionComponent::FinalizeAfterComponent_Implementation()
@@ -36,7 +45,10 @@ void UAction_AddAIPerceptionComponent::FinalizeAfterComponent_Implementation()
 	{
 		if (ACancerAIController* AIController = Cast<ACancerAIController>(Character->GetController()))
 		{
-			AIController->StartBehaviorTree();
+			if (IsValid(AIController))
+			{
+				AIController->StartBehaviorTree();
+			}
 		}
 	}
 	

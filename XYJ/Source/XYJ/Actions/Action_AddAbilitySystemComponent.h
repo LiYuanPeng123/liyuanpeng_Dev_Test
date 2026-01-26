@@ -3,6 +3,7 @@
 #include "GameplayTagContainer.h"
 #include "Abilities/GameplayAbility.h"
 #include "Actions/Action_AddActorComponent.h"
+#include "Data/CancerSoulDta.h"
 #include "Types/FCombatAbilitySet.h"
 #include "Action_AddAbilitySystemComponent.generated.h"
 
@@ -42,10 +43,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category= Ability,
 			DisplayName="升级GE")
 	TSubclassOf<UGameplayEffect> LevelGE;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Ability, DisplayName="战斗参数配置")
-	TSoftObjectPtr<UCancerCombatData> CombatData;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category="战斗参数配置")
+	FCancerSoulData SoulData;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Ability, DisplayName="初始技能配置")
 	TSoftObjectPtr<UCancerAbilitySet> StartAbilitySet;
 

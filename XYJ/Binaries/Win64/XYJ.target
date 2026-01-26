@@ -5087,6 +5087,14 @@
 			"Type": "UFS"
 		},
 		{
+			"Path": "$(ProjectDir)/Plugins/Hierarchical Task Network Planning AI/HTN.uplugin",
+			"Type": "UFS"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Makeetplace/BlockTools/BlockoutToolsPlugin.uplugin",
+			"Type": "UFS"
+		},
+		{
 			"Path": "$(ProjectDir)/Plugins/Makeetplace/BlueprinAssist/BlueprintAssist.uplugin",
 			"Type": "UFS"
 		},
@@ -5144,6 +5152,7 @@
 		"BackChannel",
 		"BlendSpaceMotionAnalysis",
 		"BlendStack",
+		"BlockoutToolsPlugin",
 		"BlueprintAssist",
 		"BlueprintHeaderView",
 		"Bridge",
@@ -5224,6 +5233,7 @@
 		"GitSourceControl",
 		"GoogleCloudMessaging",
 		"GooglePAD",
+		"HTN",
 		"HairStrands",
 		"IKRig",
 		"IOSDeviceProfileSelector",
