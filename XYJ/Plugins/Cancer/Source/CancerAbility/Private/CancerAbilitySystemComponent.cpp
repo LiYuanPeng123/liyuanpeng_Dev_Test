@@ -1,4 +1,6 @@
 #include "CancerAbilitySystemComponent.h"
+
+#include "CancerAbilityFunctionLibrary.h"
 #include "CancerAssetManager.h"
 #include "CancerCoreFunctionLibrary.h"
 #include "CancerCoreSetting.h"
@@ -636,6 +638,26 @@ void UCancerAbilitySystemComponent::SetSpecialAbilityData(UDataTable* InSpecialA
 FWeaponData* UCancerAbilitySystemComponent::GetSpecialAbilityComboData(const FGameplayTag& InComboTag)
 {
 	return SpecialAbilityData.Find(InComboTag);
+}
+
+void UCancerAbilitySystemComponent::ResetHitTargetAndSource()
+{
+	if (AActor* HitActor = CurrentHitSource.Get())
+	{
+		if (UCancerAbilitySystemComponent* CancerASC = UCancerAbilityFunctionLibrary::GetCancerAbilitySystemComponent(HitActor))
+		{
+			CancerASC->CurrentHitSource.Reset();
+			CancerASC->CurrentHitTarget.Reset();
+		}
+	}
+	if (AActor* HitActor = CurrentHitTarget.Get())
+	{
+		if (UCancerAbilitySystemComponent* CancerASC = UCancerAbilityFunctionLibrary::GetCancerAbilitySystemComponent(HitActor))
+		{
+			CancerASC->CurrentHitSource.Reset();
+			CancerASC->CurrentHitTarget.Reset();
+		}
+	}
 }
 
 void UCancerAbilitySystemComponent::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)

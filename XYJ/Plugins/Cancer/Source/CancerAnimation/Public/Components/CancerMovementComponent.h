@@ -114,6 +114,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Root Motion")
 	float RootMotionScale = 1;
 
+	UPROPERTY(BlueprintReadWrite, Category="Root Motion")
+	bool bAllowHorizontalRootMotion = true;
+	UPROPERTY(BlueprintReadWrite, Category="Root Motion")
+	bool bAllowVerticalRootMotion = true;
+
 protected:
 	virtual void ApplyRootMotionToVelocity(float DeltaTime) override;
 

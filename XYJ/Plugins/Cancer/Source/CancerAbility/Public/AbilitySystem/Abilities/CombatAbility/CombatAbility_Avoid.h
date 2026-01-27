@@ -23,5 +23,12 @@ public:
 	FName AvoidWarpName;
 
 	virtual void OnAnimationReady_Implementation() override;
+
+	UFUNCTION(BlueprintCallable,BlueprintNativeEvent)
+	void SetAvoidLocRot(AActor* Attacker,AActor* Victim,FVector& Loc,FRotator& Rot);
 protected:
+	UPROPERTY(EditAnywhere,DisplayName="判断吸附距离")
+	float LocDis = 100;
+	UPROPERTY(EditAnywhere,DisplayName="吸附到目标的距离")
+	FVector TargetLoc = FVector(100,0,50);
 };

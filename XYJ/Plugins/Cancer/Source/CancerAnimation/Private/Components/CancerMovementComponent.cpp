@@ -1,4 +1,5 @@
 #include "Components/CancerMovementComponent.h"
+#include "DrawDebugHelpers.h"
 #include "CancerAssetManager.h"
 #include "KismetTraceUtils.h"
 #include "Components/CapsuleComponent.h"
@@ -13,6 +14,7 @@ static float GroundTraceDistance = 100000.0f;
 
 static TAutoConsoleVariable<bool> RagdollVar(TEXT("Cancer.DebugRagdoll"), false,TEXT(""));
 static TAutoConsoleVariable<bool> TraceLedgeVar(TEXT("Cancer.TraceLedge"), false,TEXT(""));
+static TAutoConsoleVariable<bool> CVarDebugGroundInfo(TEXT("Cancer.DebugGroundInfo"), false, TEXT("Show ground distance debug info"));
 
 namespace CancerMovement
 {
@@ -498,14 +500,21 @@ void UCancerMovementComponent::ApplyRootMotionToVelocity(float DeltaTime)
 	{
 		return;
 	}
-
 	FVector RootMotionVelocity = RootMotionParams.GetRootMotionTransform().GetTranslation() / DeltaTime;
-
-	FVector BlendedVelocity = FMath::Lerp(PreRootMotionVelocity, RootMotionVelocity, RootMotionBlendAlpha);
-	Velocity = BlendedVelocity;
+	FVector FinalVelocity = RootMotionVelocity;
+	if (!bAllowHorizontalRootMotion)
+	{
+		// 屏蔽 XY：保留物理系统的水平速度，不使用动画位移
+		FinalVelocity.X = PreRootMotionVelocity.X;
+		FinalVelocity.Y = PreRootMotionVelocity.Y;
+	}
+	if (!bAllowVerticalRootMotion)
+	{
+		// 屏蔽 Z：让重力或物理系统的 Z 轴速度接管，动画不再控制高度
+		FinalVelocity.Z = PreRootMotionVelocity.Z;
+	}
+	Velocity = FinalVelocity;
 	Velocity *= RootMotionScale;
-	//如果希望在混合时保留根运动方向，但叠加当前速度
-	//Velocity = RootMotionVelocity + (PreRootMotionVelocity * (1.f - RootMotionBlendAlpha));
 }
 
 bool UCancerMovementComponent::IsSprint() const
@@ -777,7 +786,7 @@ const FCancerCharacterGroundInfo& UCancerMovementComponent::GetGroundInfo()
 		// false: 不显示调试信息
 		// CharacterOwner: 忽略自身碰撞
 		FCollisionQueryParams QueryParams(
-			SCENE_QUERY_STAT(XGCharacterMovementComponent_GetGroundInfo), false, CharacterOwner);
+			SCENE_QUERY_STAT(CancerCharacterMovementComponent_GetGroundInfo), false, CharacterOwner);
 		FCollisionResponseParams ResponseParam;
 		InitCollisionParams(QueryParams, ResponseParam);
 
@@ -789,12 +798,15 @@ const FCancerCharacterGroundInfo& UCancerMovementComponent::GetGroundInfo()
 		CachedGroundInfo.GroundHitResult = HitResult;
 		CachedGroundInfo.GroundDistance = GroundTraceDistance;
 
-		// 可视化调试TODO::
-		// 在屏幕上显示射线检测的起始点和终点
-#if WITH_EDITOR
-
-
-#endif
+		// 可视化调试
+		if (IsInGameThread() && CVarDebugGroundInfo.GetValueOnGameThread())
+		{
+			DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Green, false, -1, 0, 1.0f);
+			if (HitResult.bBlockingHit)
+			{
+				DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 5.0f, 8, FColor::Red, false, -1, 0, 1.0f);
+			}
+		}
 		// 根据运动模式更新地面距离
 		if (MovementMode == MOVE_NavWalking)
 		{
@@ -808,7 +820,6 @@ const FCancerCharacterGroundInfo& UCancerMovementComponent::GetGroundInfo()
 			CachedGroundInfo.GroundDistance = FMath::Max((HitResult.Distance - CapsuleHalfHeight), 0.0f);
 		}
 	}
-
 	// 更新缓存信息的最后更新帧
 	CachedGroundInfo.LastUpdateFrame = GFrameCounter;
 

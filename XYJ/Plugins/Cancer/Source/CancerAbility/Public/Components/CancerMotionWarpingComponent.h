@@ -4,8 +4,22 @@
 #include "MotionWarpingComponent.h"
 #include "CancerMotionWarpingComponent.generated.h"
 
+UENUM(BlueprintType)
+enum class ECancerHeightAlignment : uint8
+{
+	// 保持当前高度或原动画高度变化
+	Ignore,
+	// 强制对齐到目标高度
+	SnapToTarget,
+	// 保持开始位移时与目标的相对高度差
+	MaintainRelativeOffset,
+	// 目标高度 + 自定义偏移
+	CustomOffset
+};
+
 /**
- * 
+ * 运动扭曲组件
+ * 用于在运行时添加和管理根运动扭曲
  */
 UCLASS(ClassGroup=(Cancer), BlueprintType, Blueprintable, meta=(BlueprintSpawnableComponent))
 class CANCERABILITY_API UCancerMotionWarpingComponent : public UMotionWarpingComponent
@@ -15,12 +29,16 @@ class CANCERABILITY_API UCancerMotionWarpingComponent : public UMotionWarpingCom
 public:
 	UFUNCTION(BlueprintCallable, DisplayName="位移到目标Actor")
 	void UpdateLocationAndRotation_Actor(const AActor* Target, float MaxDis, FVector Offset, FName WarpName,
-	                                     bool bCancelWarpIfCloser = false);
+	                                     bool bCancelWarpIfCloser = false, 
+	                                     ECancerHeightAlignment HeightAlignment = ECancerHeightAlignment::Ignore, 
+	                                     float CustomHeightOffset = 0.f);
 
 	// bCancelWarpIfCloser: 为真时，若当前角色到目标的距离小于“Warp位置到目标”的距离，则取消本次 Warp
 	UFUNCTION(BlueprintCallable, DisplayName="位移到目标Character(会减去胶囊体半径)")
 	void UpdateLocationAndRotation_Character(const AActor* Target, float MaxDis, FVector Offset, FName WarpName,
-	                                         bool bCancelWarpIfCloser = false);
+	                                         bool bCancelWarpIfCloser = false, 
+	                                         ECancerHeightAlignment HeightAlignment = ECancerHeightAlignment::Ignore, 
+	                                         float CustomHeightOffset = 0.f);
 
 	UFUNCTION(BlueprintCallable, DisplayName="从自身位移到(仅Yaw方向)")
 	void UpdateLocationAndRotation_Self(FVector Offset, FName WarpName);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InputTriggers.h"
+#include "GameplayTagContainer.h"
 #include "CancerStateMachineCondition.generated.h"
 
 class UCancerStateMachineNode;
@@ -46,86 +46,46 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Cancer|StateMachine")
 	bool IsSatisfied(UObject* Context, const class UCancerStateMachineNode* SourceNode, float StateTime) const;
 
-	virtual bool IsSatisfied_Implementation(UObject* Context, const class UCancerStateMachineNode* SourceNode, float StateTime) const { return true; }
+	virtual bool IsSatisfied_Implementation(UObject* Context, const class UCancerStateMachineNode* SourceNode,
+	                                        float StateTime) const { return true; }
 };
 
 /**
  * UCancerStateMachineCondition_Event
- * 事件驱动式条件基类 (如按键触发)
+ * 事件驱动式条件
  */
-UCLASS(Abstract, Blueprintable, EditInlineNew)
+UCLASS(Blueprintable, EditInlineNew)
 class CANCERSTATEMACHINE_API UCancerStateMachineCondition_Event : public UCancerStateMachineCondition
 {
 	GENERATED_BODY()
 
 public:
-	/** 当条件达成时触发的回调 */
-	FOnCancerConditionTriggered OnConditionTriggered;
+	/** 触发跳转的事件标签 */
+	UPROPERTY(EditAnywhere, Category = "Event")
+	FGameplayTag TriggerTag;
 
-	/** 进入状态时激活条件绑定 */
-	UFUNCTION(BlueprintNativeEvent, Category = "Cancer|StateMachine")
-	void ActivateCondition(UObject* Context);
-	virtual void ActivateCondition_Implementation(UObject* Context) {}
-
-	/** 退出状态时清理条件绑定 */
-	UFUNCTION(BlueprintNativeEvent, Category = "Cancer|StateMachine")
-	void DeactivateCondition(UObject* Context);
-	virtual void DeactivateCondition_Implementation(UObject* Context) {}
-
-protected:
-	/** 辅助函数：通知条件已触发 */
-	UFUNCTION(BlueprintCallable, Category = "Cancer|StateMachine")
-	void BroadcastTriggered(UObject* Context);
+	/** 是否要求精确匹配 (False 则允许子标签触发) */
+	UPROPERTY(EditAnywhere, Category = "Event")
+	bool bExactMatch = true;
 };
+
 
 /**
  * UCancerStateMachineCondition_TimeWindow
- * 时间窗口条件 (属于 Tick 类型)
+ * 延迟条件(属于 Tick 类型)
  */
-UCLASS(Blueprintable, EditInlineNew, meta = (DisplayName = "Time Window"))
-class CANCERSTATEMACHINE_API UCancerStateMachineCondition_TimeWindow : public UCancerStateMachineCondition_Tick
+UCLASS(Blueprintable, EditInlineNew, meta = (DisplayName = "Delay Time"))
+class CANCERSTATEMACHINE_API UCancerStateMachineCondition_DelayTime : public UCancerStateMachineCondition_Tick
 {
 	GENERATED_BODY()
 
 public:
-	UCancerStateMachineCondition_TimeWindow();
+	UCancerStateMachineCondition_DelayTime();
 
-	/** 转换触发的起始时间 */
+	/** 转换触发的时间 */
 	UPROPERTY(EditAnywhere, Category = "Time")
-	float StartTime;
-
-	/** 转换触发的截止时间 (如果为 0，则不限制) */
-	UPROPERTY(EditAnywhere, Category = "Time")
-	float EndTime;
+	float DelayTime;
 
 	virtual bool IsSatisfied_Implementation(UObject* Context, const UCancerStateMachineNode* SourceNode,
 	                                        float StateTime) const override;
-};
-
-/**
- * UCancerStateMachineCondition_TransitionInput
- * 按键输入条件 (属于 Event 类型)
- */
-UCLASS(Blueprintable, EditInlineNew, meta = (DisplayName = "Transition Input"))
-class CANCERSTATEMACHINE_API UCancerStateMachineCondition_TransitionInput : public UCancerStateMachineCondition_Event
-{
-	GENERATED_BODY()
-
-public:
-	/** 关联的输入动作 */
-	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<class UInputAction> InputAction;
-
-	/** 输入检测类型 */
-	UPROPERTY(EditAnywhere, Category = "Input")
-	ETriggerEvent TriggerEvent = ETriggerEvent::Started;
-
-	virtual void ActivateCondition_Implementation(UObject* Context) override;
-	virtual void DeactivateCondition_Implementation(UObject* Context) override;
-
-protected:
-	void HandleInputAction();
-
-	/** 绑定的句柄，用于解绑 */
-	uint32 BindingHandle;
 };

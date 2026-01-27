@@ -11,6 +11,7 @@
 #include "AbilitySystem/Attributes/CancerSoulSet.h"
 #include "Components/CancerCombatAttributeComponent.h"
 #include "Components/CancerHeroComponent.h"
+#include "Components/CancerMotionWarpingComponent.h"
 #include "Statics/CancerStaticsSubsystem.h"
 
 static const FVector DefaultSoulReplyValue(0.2f, 0.2f, 10.f);
@@ -145,7 +146,7 @@ void UCombatAbility_ReceiveHit::HandleReceiveAvoid_Implementation(const FGamepla
 	AActor* Victim = GetOwningActorFromActorInfo();
 	FCancerHitInfo HitInfo = DamageInfo->GetHitInfo();
 	FCancerHitEffectInfo HitEffectInfo = DamageInfo->GetHitEffectInfo();
-	FGameplayTag GCTag = HitEffectInfo.GCPerfectBlockType;
+	FGameplayTag GCTag = HitEffectInfo.GCAvoidType;
 	FGameplayCueParameters Parameters;
 	Parameters.NormalizedMagnitude = Payload.EventMagnitude;
 	Parameters.Location = HitInfo.HitResult.ImpactPoint;
@@ -243,6 +244,21 @@ void UCombatAbility_ReceiveHit::HandleReceiveDamage_Implementation(const FGamepl
 	auto HitType = DamageInfo->GetHitType();
 	auto HitInfo = DamageInfo->GetHitInfo();
 	auto ASC = GetCancerAbilitySystemComponentFromActorInfo();
+	auto AttackerASC = Cast<UCancerAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Attacker)) ;
+
+	if (ASC && AttackerASC && Victim && Attacker)
+	{
+		UCancerMotionWarpingComponent* MotionWarpingComponent = Victim->FindComponentByClass<UCancerMotionWarpingComponent>();
+		if (MotionWarpingComponent)
+		{
+			FVector Direction = -Attacker->GetActorForwardVector().GetSafeNormal();
+			MotionWarpingComponent->AddOrUpdateWarpTargetFromLocationAndRotation(FName("Hit"),HitInfo.HitResult.Location,Direction.Rotation());
+		}
+		ASC->CurrentHitSource = DamageInfo->DamageParameter.HitInfo.SourceActor;
+		ASC->CurrentHitTarget = Victim;
+		AttackerASC->CurrentHitSource = DamageInfo->DamageParameter.HitInfo.SourceActor;
+		AttackerASC->CurrentHitTarget = Victim;
+	}
 
 
 	ASC->HandleGameplayEvent(Tag_Combat_Event_AbilityTrigger_Stagger, &Payload);
@@ -272,8 +288,7 @@ void UCombatAbility_ReceiveHit::HandleReceiveDamage_Implementation(const FGamepl
 
 	//攻击者恢复气力参数
 	FVector Soul = FVector::ZeroVector;
-	if (auto AttackerASC =
-		UCancerAbilityFunctionLibrary::GetCancerAbilitySystemComponent(const_cast<AActor*>(Attacker)))
+	if (AttackerASC)
 	{
 		auto SoulData = AttackerASC->GetSoulData();
 

@@ -172,6 +172,8 @@ UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AbilityTrigger_ReceiveHit, TEXT("Combat.
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AbilityTrigger_BlockWindow, "Combat.Event.AbilityTrigger.BlockWindow");
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AbilityTrigger_Death, TEXT("Combat.Event.AbilityTrigger.Death"));
 
+//妲己投技成功抓取
+UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Event_AbilityTrigger_DaJi_XiHunSuccess, TEXT("Combat.Event.AbilityTrigger.DaJi.XiHunSuccess"));
 
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Effect_ApplySoul, TEXT("Combat.Effect.ApplySoul"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_State_InvulnerableSoul, TEXT("Combat.State.InvulnerableSoul"));
@@ -205,3 +207,4 @@ UE_DEFINE_GAMEPLAY_TAG(Tag_Inventory_Message_Switch, TEXT("Inventory.Message.Swi
 UE_DEFINE_GAMEPLAY_TAG(Tag_Quickbar_Message_EquipmentChanged, TEXT("Quickbar.Message.EquipmentChanged"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_Inventory_Message_Stackchanged, TEXT("Inventory.Message.StackChanged"));
 
+UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_Ability_Replaceable_Hit_BeiDaJiXiHun, TEXT("Ability.Action.Replaceable.Hit.BeiDaJiXiHun"));

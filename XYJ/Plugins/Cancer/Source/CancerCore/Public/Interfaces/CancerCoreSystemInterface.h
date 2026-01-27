@@ -37,4 +37,12 @@ public:
 		DisplayName="获取战斗角色向前箭头")
 	USceneComponent* GetCombatForwardReference() const;
 	virtual USceneComponent* GetCombatForwardReference_Implementation() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "CancerCore System Interface",
+		DisplayName="关闭碰撞")
+	void DisableCharacterCollision();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "CancerCore System Interface",
+		DisplayName="启用碰撞")
+	void EnableCharacterCollision();
+	
 };

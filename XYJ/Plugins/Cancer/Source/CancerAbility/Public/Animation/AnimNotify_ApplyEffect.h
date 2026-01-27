@@ -19,7 +19,13 @@ public:
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 	                    const FAnimNotifyEventReference& EventReference) override;
 
+	virtual FString GetNotifyName_Implementation() const override;
+
 protected:
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	FString DisplayName =TEXT("");
+	
 	// 要施加的GameplayEffect类
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="游戏效果", Category = "GameplayEffect")
 	TSubclassOf<UGameplayEffect> GameplayEffectClass;

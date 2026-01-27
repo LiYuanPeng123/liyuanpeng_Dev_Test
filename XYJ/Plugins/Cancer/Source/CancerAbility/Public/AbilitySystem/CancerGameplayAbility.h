@@ -167,17 +167,17 @@ public:
 
 	virtual void PostInitProperties() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cancer|Ability", DisplayName="技能激活组")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Ability", DisplayName="技能激活组")
 	ECancerAbilityActivationPolicy ActivationPolicy;
 
 	ECancerAbilityActivationPolicy GetActivationPolicy() const
 	{
 		return ActivationPolicy;
 	};
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Cancer|Costs", DisplayName="技能启动消耗")
+	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Combat Ability|Costs", DisplayName="技能启动消耗")
 	TArray<TObjectPtr<UCancerAbilityCost>> AdditionalCosts;
 
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Cancer|Costs", DisplayName="动作消耗")
+	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Combat Ability|Costs", DisplayName="动作消耗")
 	TArray<TObjectPtr<UCancerAbilityCost>> AnimationCosts;
 
 	//提交动作消耗
@@ -195,21 +195,21 @@ public:
 
 
 	// Sets the ability's camera mode.
-	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Combat Ability")
 	void SetCameraMode(TSubclassOf<UCancerCameraMode> CameraMode);
 
 	// Clears the ability's camera mode.  Automatically called if needed when the ability ends.
-	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Combat Ability")
 	void ClearCameraMode();
 
 
-	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Combat Ability")
 	UAbilityTask_WaitGameplayEvent* InitializeEventTask(FGameplayTag Event, bool bOnlyMatchExact = true);
 
-	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Combat Ability")
 	static void FinishLatentTasks(const TArray<UAbilityTask*>& Tasks);
 
-	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Combat Ability")
 	static void FinishLatentTask(UAbilityTask* Task);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Combat Ability")
@@ -225,9 +225,9 @@ public:
 
 #pragma region 伤害检测
 
-	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Combat Ability")
 	virtual void InitializeMeleeScanTask(const UCancerMeleeScan* MeleeScan) override;
-	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Combat Ability")
 	virtual UAbilityTask_ScanMeleeTarget* GetMeleeScanTask() const override;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Attack")
@@ -285,21 +285,21 @@ public:
 #pragma endregion
 
 #pragma region 相机动画
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cancer|Camera", DisplayName="启用相机动画")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat Ability|Camera", DisplayName="启用相机动画")
 	bool bUseCameraAnimation = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cancer|Camera",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat Ability|Camera",
 		meta=(EditCondition = bUseCameraAnimation, EditConditionHides), DisplayName="技能激活时执行相机动画")
 	bool bExecuteCameraAnimWhenActivated = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cancer|Camera",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat Ability|Camera",
 		meta=(EditCondition = bUseCameraAnimation, EditConditionHides), DisplayName="技能结束结束相机动画")
 	bool bMatchWhenAbilityEnd = true;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cancer|Camera",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat Ability|Camera",
 		meta=(EditCondition = bUseCameraAnimation, EditConditionHides), DisplayName="相机序列")
 	UCameraAnimationSequence* CameraAnimationSequence;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cancer|Camera",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat Ability|Camera",
 		meta=(EditCondition = bUseCameraAnimation, EditConditionHides), DisplayName="相机参数")
 	FCameraAnimationParams CameraParams;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cancer|Camera",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat Ability|Camera",
 		meta=(EditCondition = bUseCameraAnimation, EditConditionHides), DisplayName="停止时混出")
 	bool bImmediate = false;
 	void PlayCameraAnim(UCameraAnimationSequence* AnimationSequence, const FCameraAnimationParams& Params) const;
@@ -319,16 +319,16 @@ protected:
 	// Current camera mode set by the ability.
 	TSubclassOf<UCancerCameraMode> ActiveCameraMode;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Cancer|Debug", DisplayName="EnableDebug")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat Ability|Debug", DisplayName="EnableDebug")
 	bool bEnableDebug = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Cancer|Debug", DisplayName="DebugTime",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat Ability|Debug", DisplayName="DebugTime",
 		meta=(EditCondition = "bEnableDebug", EditConditionHides))
 	float EnableDebugTime = 2.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Cancer|Ability", DisplayName="激活时等待事件")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat Ability", DisplayName="激活时等待事件")
 	bool bActivateWaitEvent = true;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Cancer|Aniamtion", DisplayName="动画完成结束技能")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Combat Ability|Animation", DisplayName="动画完成结束技能")
 	bool bMatchAnimationEnd{true};
 
 private:

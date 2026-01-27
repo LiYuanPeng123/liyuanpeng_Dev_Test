@@ -45,11 +45,19 @@ void FInlineBlueprintEditorHelper::OpenAndFocus(UBlueprint* Blueprint)
 		Blueprint->Modify();
 	}
 
-	// 5. 打开蓝图编辑器
+	// 5. 强制调用蓝图编辑器（不再依赖资产推断）
 	if (GEditor)
 	{
-		UAssetEditorSubsystem* AssetEditorSubsystem = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
-		AssetEditorSubsystem->OpenEditorForAsset(Blueprint);
+		if (EventGraph)
+		{
+			// 优先聚焦到具体的图表
+			FKismetEditorUtilities::BringKismetToFocusAttentionOnObject(EventGraph);
+		}
+		else
+		{
+			// 退而求其次，打开蓝图本身
+			FKismetEditorUtilities::BringKismetToFocusAttentionOnObject(Blueprint);
+		}
 	}
 }
 

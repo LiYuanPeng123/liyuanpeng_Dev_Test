@@ -16,19 +16,19 @@ public:
 
 	UCancerCombatAnimationAbility(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Combat Ability")
 	void PlayAnimationMontage();
 
-	UFUNCTION(BlueprintPure, Category = "Cancer Combat|Abilities")
+	UFUNCTION(BlueprintPure, Category = "Combat Ability")
 	virtual bool HasSection(FName SectionName) const;
 
-	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Combat Ability")
 	virtual void MoveToSection(FName SectionName) const;
 
-	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Combat Ability")
 	virtual void SetMontagePlayRate(float PlayRate);
 
-	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Combat Ability")
 	virtual void ResetMontagePlayRate();
 
 public:

@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "CancerStateMachineData.h"
-#include "BTTask_RunCancerStateMachine.generated.h"
+#include "BTTask_StartCancerStateMachine.generated.h"
 
 class UGameplayTask_StartStateMachine;
 /**
@@ -12,12 +12,12 @@ class UGameplayTask_StartStateMachine;
  * 参考 ComboGraphBTTask_RunComboGraph 实现
  */
 UCLASS(DisplayName = "Run Cancer State Machine")
-class CANCERSTATEMACHINE_API UBTTask_RunCancerStateMachine : public UBTTaskNode
+class CANCERSTATEMACHINE_API UBTTask_StartCancerStateMachine : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 public:
-	UBTTask_RunCancerStateMachine(const FObjectInitializer& ObjectInitializer);
+	UBTTask_StartCancerStateMachine(const FObjectInitializer& ObjectInitializer);
 
 	/** 状态机资产 */
 	UPROPERTY(EditAnywhere, Category = "Cancer|StateMachine")

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "AnimNotifyState_MotionWarping.h"
+#include "Components/CancerMotionWarpingComponent.h"
 #include "AnimNotifyState_DisplacementWarp.generated.h"
 
 /**
@@ -40,7 +41,8 @@ public:
 	float Radius = 300.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="自动吸附", DisplayName="自动吸附高度")
 	float Height = 150.f;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="自动吸附", DisplayName="自动吸附起始点偏移")
+	FVector AutoAdsorptionOffset = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="DisplacementWarp", DisplayName="WarpName")
 	FName WarpTargetName = FName(TEXT("AttackTarget"));
@@ -74,7 +76,32 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="DisplacementWarp", DisplayName="保留原始位移节奏（按原动画每帧比例缩放）")
 	bool bPreserveOriginalRhythm = true;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="DisplacementWarp|ACT", DisplayName="高度对齐策略")
+	ECancerHeightAlignment HeightAlignment = ECancerHeightAlignment::Ignore;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="DisplacementWarp|ACT", DisplayName="自定义高度偏移",
+		meta=(EditCondition="HeightAlignment==ECancerHeightAlignment::CustomOffset", EditConditionHides))
+	float CustomHeightOffset = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="DisplacementWarp|ACT", DisplayName="实时动态修正距离")
+	bool bDynamicUpdateTarget = false;
+
+	/** 动态修正的时间百分比范围 (0-1) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="DisplacementWarp|ACT", DisplayName="动态修正时间范围",
+		meta=(EditCondition="bDynamicUpdateTarget", EditConditionHides))
+	FVector2D DynamicCorrectionRange = FVector2D(0.f, 0.1f);
+
+	/** 是否在执行期间强制切换为 Flying 模式（解决 Z 轴位移被重力干扰的问题） */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="DisplacementWarp|ACT", DisplayName="强制切换Flying模式")
+	bool bForceFlyingMode = true;
+
 	virtual URootMotionModifier* AddRootMotionModifier_Implementation(UMotionWarpingComponent* MotionWarpingComp,
 	                                                                  const UAnimSequenceBase* Animation,
 	                                                                  float StartTime, float EndTime) const override;
+
+	void UpdateWarpTarget(USkeletalMeshComponent* MeshComp) const;
+
+private:
+	/** 获取统一的检测原点和朝向（包含偏移计算） */
+	void GetSearchInfo(USkeletalMeshComponent* MeshComp, FVector& OutLocation, FVector& OutForward) const;
 };

@@ -94,11 +94,11 @@ struct FCancerHitInfo
 	float HardDuration = 0.0f;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="击退距离", meta = (ClampMin = "0.0"))
 	float KnockbackDistance = 0.0f;
-	
+
 	// 允许子弹指定受击者要触发的 Ability Tag
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="命中触发目标技能Tag")
 	FGameplayTag TriggerTargetAbilityTag;
-	
+
 	//  控制时长，将通过 EventMagnitude 传递给目标技能
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="命中触发目标技能时长")
 	float TriggerTargetAbilityDuration = 0.0f;
@@ -176,9 +176,11 @@ struct FCancerHitEffectInfo
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|格挡", DisplayName="可格挡")
 	bool bBlocked = true;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|格挡", meta=(EditCondition ="bBlocked"), DisplayName="格挡GC标签")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|格挡", meta=(EditCondition ="bBlocked"),
+		DisplayName="格挡GC标签")
 	FGameplayTag GCBlockType = Tag_GameplayCue_Block;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|格挡", meta=(EditCondition ="bBlocked"), DisplayName="格挡GC旋转")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|格挡", meta=(EditCondition ="bBlocked"),
+		DisplayName="格挡GC旋转")
 	FRotator GCBlockRotation = FRotator::ZeroRotator;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|弹反", DisplayName="可弹反")
 	bool bReflected = true;
@@ -199,10 +201,10 @@ struct FCancerHitEffectInfo
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|踩踏", DisplayName="踩踏")
 	bool bAvoid = true;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|踩踏", meta=(EditCondition ="bInvincible"),
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|踩踏", meta=(EditCondition ="bAvoid"),
 		DisplayName="踩踏GC标签")
 	FGameplayTag GCAvoidType = Tag_GameplayCue_Avoid;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|踩踏", meta=(EditCondition ="bInvincible"),
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|踩踏", meta=(EditCondition ="bAvoid"),
 		DisplayName="踩踏GC旋转")
 	FRotator GCAvoidRotation = FRotator::ZeroRotator;
 };
@@ -247,11 +249,11 @@ class CANCERABILITY_API UCancerDamageType : public UObject
 public:
 	UCancerDamageType();
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="禁用伤害检测",meta=(ExposeOnSpawn = true))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="禁用伤害检测", meta=(ExposeOnSpawn = true))
 	bool bEnable = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan", DisplayName="启用调试",meta=(ExposeOnSpawn = true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Scan", DisplayName="启用调试", meta=(ExposeOnSpawn = true))
 	bool bEnableDebug = true;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="DamageParameter",meta=(ExposeOnSpawn = true))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="DamageParameter", meta=(ExposeOnSpawn = true))
 	FCancerDamageParameter DamageParameter;
 
 	UFUNCTION(blueprintCallable, BlueprintPure, Category = "Melee Scan")

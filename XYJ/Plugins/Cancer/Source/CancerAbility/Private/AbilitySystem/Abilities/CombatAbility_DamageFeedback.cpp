@@ -7,6 +7,8 @@
 #include "CancertGlobalAbilitySystem.h"
 #include "Components/CancerQuickBarComponent.h"
 #include "GameFramework/CancerDamageType.h"
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 
 UCombatAbility_DamageFeedback::UCombatAbility_DamageFeedback(const FObjectInitializer& ObjectInitializer)
 {
@@ -60,6 +62,24 @@ void UCombatAbility_DamageFeedback::HandleEventReceived_Implementation(FGameplay
 				{
 					UCancerQuickBarComponent* CancerQuickBarComponent =  UCancerInventoryFunctionLibrary::GetCancerQuickBarComponent(OwnerActor);
 					CancerQuickBarComponent->GetQuickBarIns(QuickBar::QuickBar_Weapon)->DiscardItemInSlot(OwnerActor->GetActorTransform());
+				}
+			}
+		}
+	}
+	
+	if (DamageType->DamageParameter.HitInfo.TriggerTargetAbilityTag == Tag_Combat_Ability_Replaceable_Hit_BeiDaJiXiHun)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("XiHun Success Trigger"));
+		if (UAbilitySystemComponent* ASC =  GetAbilitySystemComponentFromActorInfo())
+		{
+			// 这里需要确认一下是不是打到的是玩家 也可能释放抓取技 打到了别人
+			if (AActor* OwnerActor = ASC->GetOwnerActor())
+			{
+				ACharacter* PlayerCharacter  = UGameplayStatics::GetPlayerCharacter(OwnerActor,0);
+				AActor* PlayerActor = Cast<AActor>(PlayerCharacter);
+				if (DamageType->DamageParameter.HitInfo.HitResult.GetActor() == PlayerActor)
+				{
+					ASC->HandleGameplayEvent(Tag_Combat_Event_AbilityTrigger_DaJi_XiHunSuccess, &Payload);
 				}
 			}
 		}

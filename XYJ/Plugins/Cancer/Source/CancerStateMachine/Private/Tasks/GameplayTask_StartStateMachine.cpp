@@ -1,10 +1,7 @@
 
 #include "Tasks/GameplayTask_StartStateMachine.h"
-
 #include "Engine/Engine.h"
 #include "VisualLogger/VisualLogger.h"
-#include "AbilitySystemBlueprintLibrary.h"
-#include "AbilitySystemComponent.h"
 #include "CancerStateMachineCondition.h"
 #include "GameplayTasksComponent.h"
 
@@ -78,21 +75,6 @@ void UGameplayTask_StartStateMachine::Activate()
 	// 2. 绑定直接跳转请求
 	StateMachineInstance.OnRequestStateSwitch.AddUObject(this, &UGameplayTask_StartStateMachine::SwitchState);
 
-	// 3. 激活全局转换的条件绑定
-	for (UCancerStateMachineEdge* Edge : StateMachineInstance.RuntimeGlobalEdges)
-	{
-		if (Edge)
-		{
-			for (UCancerStateMachineCondition* Condition : Edge->Conditions)
-			{
-				if (UCancerStateMachineCondition_Event* EventCond = Cast<UCancerStateMachineCondition_Event>(Condition))
-				{
-					EventCond->ActivateCondition(Context);
-				}
-			}
-		}
-	}
-
 	// 3. 启动状态机
 	UCancerStateMachineNode* StartNodeTemplate = StateMachineData->GetStartNode(Context);
 	if (StartNodeTemplate)
@@ -137,20 +119,6 @@ void UGameplayTask_StartStateMachine::OnDestroy(bool bInOwnerFinished)
 	}
 
 	// 解绑全局转换的条件
-	UObject* Context = GetContext();
-	for (UCancerStateMachineEdge* Edge : StateMachineInstance.RuntimeGlobalEdges)
-	{
-		if (Edge)
-		{
-			for (UCancerStateMachineCondition* Condition : Edge->Conditions)
-			{
-				if (UCancerStateMachineCondition_Event* EventCond = Cast<UCancerStateMachineCondition_Event>(Condition))
-				{
-					EventCond->DeactivateCondition(Context);
-				}
-			}
-		}
-	}
 	StateMachineInstance.RuntimeGlobalEdges.Empty();
 	StateMachineInstance.OnRequestStateSwitch.RemoveAll(this);
 
@@ -212,43 +180,12 @@ void UGameplayTask_StartStateMachine::SwitchState(UCancerStateMachineNode* NewSt
 
 void UGameplayTask_StartStateMachine::BindCurrentStateTriggers()
 {
-	if (!CurrentState) return;
-
-	UObject* Context = GetContext();
-	for (UCancerStateMachineEdge* Edge : CurrentState->OutgoingEdges)
-	{
-		if (Edge)
-		{
-			for (UCancerStateMachineCondition* Condition : Edge->Conditions)
-			{
-				if (UCancerStateMachineCondition_Event* EventCond = Cast<UCancerStateMachineCondition_Event>(Condition))
-				{
-					// 激活条件绑定 (现在直接跳转逻辑由 Condition 内部处理)
-					EventCond->ActivateCondition(Context);
-				}
-			}
-		}
-	}
+	// 事件条件绑定现在是隐式的
 }
 
 void UGameplayTask_StartStateMachine::UnbindCurrentStateTriggers()
 {
-	if (!CurrentState) return;
-
-	UObject* Context = GetContext();
-	for (UCancerStateMachineEdge* Edge : CurrentState->OutgoingEdges)
-	{
-		if (Edge)
-		{
-			for (UCancerStateMachineCondition* Condition : Edge->Conditions)
-			{
-				if (UCancerStateMachineCondition_Event* EventCond = Cast<UCancerStateMachineCondition_Event>(Condition))
-				{
-					EventCond->DeactivateCondition(Context);
-				}
-			}
-		}
-	}
+	// 事件条件绑定现在是隐式的
 }
 
 void UGameplayTask_StartStateMachine::CheckTransitions(bool bIsEventTrigger)

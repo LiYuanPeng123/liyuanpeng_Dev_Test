@@ -201,10 +201,22 @@ FTransform URootMotionModifier_DisplacementWarp::ProcessRootMotion(const FTransf
 					const FVector CapsuleBottomLocation = (OwnerActor->GetActorLocation()
 						/*- FVector(0.f, 0.f, CapsuleHalfHeight)*/);
 					float DesiredVerticalTarget = TargetLocation.Z - CapsuleBottomLocation.Z;
-					const float VerticalTranslationWarped = !FMath::IsNearlyZero(VerticalOriginal)
-						                                        ? ((VerticalDelta * DesiredVerticalTarget) /
-							                                        VerticalOriginal)
-						                                        : 0.f;
+					float VerticalTranslationWarped = 0.f;
+					if (!FMath::IsNearlyZero(VerticalOriginal))
+					{
+						VerticalTranslationWarped = (VerticalDelta * DesiredVerticalTarget) / VerticalOriginal;
+					}
+					else if (!FMath::IsNearlyZero(HorizontalOriginal))
+					{
+						// 如果动画没有垂直位移，但有水平位移，则按水平位移的比例来分配垂直位移
+						VerticalTranslationWarped = (HorizontalDelta * DesiredVerticalTarget) / HorizontalOriginal;
+					}
+					else
+					{
+						// 如果连水平位移都没有，则按时间线性分配
+						float TimeAlpha = (CurrentPosition - PreviousPosition) / (EndTime - PreviousPosition);
+						VerticalTranslationWarped = DesiredVerticalTarget * TimeAlpha;
+					}
 					WarpedDelta.Z = VerticalTranslationWarped;
 				}
 				else

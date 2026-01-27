@@ -4,33 +4,37 @@
 #include "Abilities/Tasks/AbilityTask.h"
 #include "CancerStateMachineData.h"
 #include "CancerStateMachineNode.h"
-#include "AbilityTask_RunCancerStateMachine.generated.h"
+#include "AbilityTask_StartCancerStateMachine.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCancerStateMachineAbilityTaskDelegate, UCancerStateMachineNode*, StateNode);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCancerStateMachineEventReceivedDelegate, FGameplayTag, EventTag, FGameplayEventData, EventData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCancerStateMachineAbilityTaskDelegate, UCancerStateMachineNode*, StateNode)
+;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCancerStateMachineEventReceivedDelegate, FGameplayTag, EventTag,
+                                             FGameplayEventData, EventData);
 
 /**
- * UAbilityTask_RunCancerStateMachine
- * 在 Gameplay Ability 中运行 Cancer 状态机的任务
- * 参考 ComboGraphAbilityTask_StartGraph 实现
+ *
+ * 状态机的任务
  */
 UCLASS()
-class CANCERSTATEMACHINE_API UAbilityTask_RunCancerStateMachine : public UAbilityTask
+class CANCERSTATEMACHINE_API UAbilityTask_StartCancerStateMachine : public UAbilityTask
 {
 	GENERATED_BODY()
 
 public:
-	UAbilityTask_RunCancerStateMachine(const FObjectInitializer& ObjectInitializer);
+	UAbilityTask_StartCancerStateMachine(const FObjectInitializer& ObjectInitializer);
 
 	/**
 	 * 启动状态机任务 (Ability Task 版本)
 	 * @param OwningAbility 拥有该任务的 Ability
 	 * @param InData 状态机配置资产
-	 * @param ContextOverride 可选：覆盖执行上下文 (默认使用 AvatarActor)
 	 * @param bInDebug 是否开启调试模式
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Cancer|StateMachine|Abilities", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UAbilityTask_RunCancerStateMachine* RunCancerStateMachine(UGameplayAbility* OwningAbility, UCancerStateMachineData* InData, UObject* ContextOverride = nullptr, bool bInDebug = false);
+	UFUNCTION(BlueprintCallable, Category = "Cancer|StateMachine|Abilities",
+		meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
+	static UAbilityTask_StartCancerStateMachine* StartCancerStateMachine(UGameplayAbility* OwningAbility,
+	                                                                   UCancerStateMachineData* InData,
+	                                                                   bool bInDebug = false);
 
 	/** 当状态机进入新状态时的回调 */
 	UPROPERTY(BlueprintAssignable)
@@ -60,11 +64,7 @@ protected:
 	/** 状态机运行时实例 */
 	UPROPERTY()
 	FCancerStateMachineInstance StateMachineInstance;
-
-	/** 可选的上下文覆盖 */
-	UPROPERTY()
-	TObjectPtr<UObject> ContextOverride;
-
+	
 	//~ Begin UGameplayTask Interface
 	virtual void Activate() override;
 	virtual void TickTask(float DeltaTime) override;
@@ -83,7 +83,6 @@ protected:
 	void HandleEventReceived(FGameplayEventData Payload);
 
 protected:
-
 	/** 检查转换逻辑 */
 	void CheckTransitions(bool bIsEventTrigger = false);
 

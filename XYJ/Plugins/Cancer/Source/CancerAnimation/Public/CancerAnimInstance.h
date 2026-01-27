@@ -56,7 +56,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
 	void SetCustomMovementMode(ECustomRotationMode CustomMode);
-
+	
+	// 攻击时的IK目标点
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attack IK")
+	FVector AttackIKTargetPoint;
 
 #pragma region GAS Tag綁定
 

@@ -105,6 +105,7 @@ public:
 	void BindToInputManager();
 
 	//获取激活的实例技能
+	UFUNCTION(BlueprintCallable)
 	void GetActiveAbilitiesWithTags(const FGameplayTagContainer& GameplayTagContainer,
 	                                TArray<UGameplayAbility*>& ActiveAbilities);
 	
@@ -313,6 +314,20 @@ protected:
 	TMap<FGameplayTag,FWeaponData> SpecialAbilityData;
 #pragma endregion
 
+public:
+	// 当命中目标或被命中时  保存攻击双方的引用 便于交互技能确认目标
+	// 攻击者
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	TWeakObjectPtr<AActor> CurrentHitSource;
+
+	// 受击者
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	TWeakObjectPtr<AActor> CurrentHitTarget;
+
+	// 重置目标
+	UFUNCTION(BlueprintCallable)
+	void ResetHitTargetAndSource();
+	
 private:
 	virtual void OnTagUpdated(const FGameplayTag& Tag, bool TagExists) override;
 	void OnGameplayEffectApplied(UAbilitySystemComponent* Source, const FGameplayEffectSpec& Spec,

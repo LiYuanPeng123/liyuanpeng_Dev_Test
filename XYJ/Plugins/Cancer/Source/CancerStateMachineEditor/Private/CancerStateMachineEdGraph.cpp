@@ -36,30 +36,45 @@ void UCancerStateMachineEdGraph::SaveGraph()
 	StateMachineData->EntryEdges.Empty();
 	StateMachineData->GlobalEdges.Empty();
 
-	// 用于快速查找 EditorNode 对应的 RuntimeNode
+	// 2. 同步节点并获取映射表
 	TMap<UEdGraphNode*, UObject*> EdToRuntimeMap;
+	SyncNodes(EdToRuntimeMap);
 
-	// 2. 第一遍遍历：收集所有运行时节点和边，并将它们归属到 DataAsset 下
+	// 3. 构建连接关系
+	BuildConnections(EdToRuntimeMap);
+
+	// 4. 确定 RootNodes (没有父节点的节点)
+	for (UCancerStateMachineNode* Node : StateMachineData->AllNodes)
+	{
+		if (Node && Node->ParentNodes.Num() == 0)
+		{
+			StateMachineData->RootNodes.Add(Node);
+		}
+	}
+}
+
+void UCancerStateMachineEdGraph::SyncNodes(TMap<UEdGraphNode*, UObject*>& OutEdToRuntimeMap)
+{
 	for (UEdGraphNode* Node : Nodes)
 	{
 		if (UCancerStateMachineEdNode* EdNode = Cast<UCancerStateMachineEdNode>(Node))
 		{
 			if (EdNode->RuntimeNode)
+			{
+				if (EdNode->RuntimeNode->GetOuter() != StateMachineData)
 				{
-					if (EdNode->RuntimeNode->GetOuter() != StateMachineData)
-					{
-						EdNode->RuntimeNode->Rename(nullptr, StateMachineData, REN_DontCreateRedirectors | REN_DoNotDirty);
-					}
-					StateMachineData->AllNodes.Add(EdNode->RuntimeNode);
-					
-					// 清理旧的出边连接，准备重新构建
-					EdNode->RuntimeNode->OutgoingEdges.Empty();
-					EdNode->RuntimeNode->ChildrenNodes.Empty();
-					EdNode->RuntimeNode->ParentNodes.Empty();
-					
-					// 记录映射
-					EdToRuntimeMap.Add(EdNode, EdNode->RuntimeNode);
+					EdNode->RuntimeNode->Rename(nullptr, StateMachineData, REN_DontCreateRedirectors | REN_DoNotDirty);
 				}
+				StateMachineData->AllNodes.Add(EdNode->RuntimeNode);
+				
+				// 清理旧的出边连接，准备重新构建
+				EdNode->RuntimeNode->OutgoingEdges.Empty();
+				EdNode->RuntimeNode->ChildrenNodes.Empty();
+				EdNode->RuntimeNode->ParentNodes.Empty();
+				
+				// 记录映射
+				OutEdToRuntimeMap.Add(EdNode, EdNode->RuntimeNode);
+			}
 		}
 		else if (UCancerStateMachineEdNodeEdgeBase* EdEdge = Cast<UCancerStateMachineEdNodeEdgeBase>(Node))
 		{
@@ -73,12 +88,14 @@ void UCancerStateMachineEdGraph::SaveGraph()
 				EdEdge->RuntimeEdge->StartNode = nullptr;
 				EdEdge->RuntimeEdge->EndNode = nullptr;
 				
-				EdToRuntimeMap.Add(EdEdge, EdEdge->RuntimeEdge);
+				OutEdToRuntimeMap.Add(EdEdge, EdEdge->RuntimeEdge);
 			}
 		}
 	}
+}
 
-	// 3. 第二遍遍历：构建连接关系
+void UCancerStateMachineEdGraph::BuildConnections(const TMap<UEdGraphNode*, UObject*>& EdToRuntimeMap)
+{
 	for (UEdGraphNode* Node : Nodes)
 	{
 		// 处理状态节点的出边
@@ -87,69 +104,15 @@ void UCancerStateMachineEdGraph::SaveGraph()
 			UCancerStateMachineNode* StartRuntimeNode = Cast<UCancerStateMachineNode>(EdToRuntimeMap.FindRef(StartEdNode));
 			if (!StartRuntimeNode) continue;
 
-			TArray<UEdGraphPin*> OutputPins;
-			OutputPins.Add(StartEdNode->GetOutputPin());
-			OutputPins.Add(StartEdNode->GetFinishPin());
-
-			for (UEdGraphPin* OutPin : OutputPins)
+			// 处理普通输出引脚
+			if (UEdGraphPin* OutPin = StartEdNode->GetOutputPin())
 			{
-				if (!OutPin) continue;
-
-				const bool bIsFinishPin = (OutPin->PinName == TEXT("OnFinished"));
-
-				for (UEdGraphPin* LinkedPin : OutPin->LinkedTo)
-				{
-					UEdGraphNode* LinkedNode = LinkedPin->GetOwningNode();
-					
-					// 情况 A：直接连到另一个状态
-					if (UCancerStateMachineEdNode* EndEdNode = Cast<UCancerStateMachineEdNode>(LinkedNode))
-					{
-						UCancerStateMachineNode* EndRuntimeNode = Cast<UCancerStateMachineNode>(EdToRuntimeMap.FindRef(EndEdNode));
-						if (EndRuntimeNode)
-						{
-							// 如果没有中间边对象，创建一个默认边
-							UCancerStateMachineEdge* DefaultEdge = NewObject<UCancerStateMachineEdge>(StartRuntimeNode);
-							DefaultEdge->StartNode = StartRuntimeNode;
-							DefaultEdge->EndNode = EndRuntimeNode;
-							DefaultEdge->bIsFinishEdge = bIsFinishPin; // 如果是从 OnFinished 拉出来的，标记为完成转换
-							StartRuntimeNode->OutgoingEdges.Add(DefaultEdge);
-							
-							// 更新父子关系 (对齐 ComboGraph)
-							StartRuntimeNode->ChildrenNodes.AddUnique(EndRuntimeNode);
-							EndRuntimeNode->ParentNodes.AddUnique(StartRuntimeNode);
-							
-							StateMachineData->AllEdges.Add(DefaultEdge);
-						}
-					}
-					// 情况 B：连到了转换节点 (Edge Node)
-					else if (UCancerStateMachineEdNodeEdgeBase* EdEdgeNode = Cast<UCancerStateMachineEdNodeEdgeBase>(LinkedNode))
-					{
-						UCancerStateMachineEdNode* ActualEndEdNode = EdEdgeNode->GetEndNode();
-						UCancerStateMachineEdge* RuntimeEdge = EdEdgeNode->RuntimeEdge;
-						
-						if (ActualEndEdNode && RuntimeEdge)
-						{
-							UCancerStateMachineNode* EndRuntimeNode = Cast<UCancerStateMachineNode>(EdToRuntimeMap.FindRef(ActualEndEdNode));
-							if (EndRuntimeNode)
-							{
-								// 如果是从 OnFinished 引脚连出来的，强制同步边属性
-								if (bIsFinishPin)
-								{
-									EdEdgeNode->bIsFinishEdge = true;
-									RuntimeEdge->bIsFinishEdge = true;
-								}
-
-								RuntimeEdge->StartNode = StartRuntimeNode;
-								RuntimeEdge->EndNode = EndRuntimeNode;
-								StartRuntimeNode->OutgoingEdges.Add(RuntimeEdge);
-								
-								// 更新父子关系 (对齐 ComboGraph)
-								StartRuntimeNode->ChildrenNodes.AddUnique(EndRuntimeNode);
-								EndRuntimeNode->ParentNodes.AddUnique(StartRuntimeNode);
-							}
-						}
-					}
-				}
+				ProcessOutputPinConnections(OutPin, StartRuntimeNode, EdToRuntimeMap);
+			}
+			// 处理完成输出引脚
+			if (UEdGraphPin* FinishPin = StartEdNode->GetFinishPin())
+			{
+				ProcessOutputPinConnections(FinishPin, StartRuntimeNode, EdToRuntimeMap);
 			}
 		}
 		// 处理 Entry 节点
@@ -243,13 +206,65 @@ void UCancerStateMachineEdGraph::SaveGraph()
 			}
 		}
 	}
+}
 
-	// 4. 第三遍遍历：确定 RootNodes (没有父节点的节点)
-	for (UCancerStateMachineNode* Node : StateMachineData->AllNodes)
+void UCancerStateMachineEdGraph::ProcessOutputPinConnections(UEdGraphPin* OutPin, UCancerStateMachineNode* StartRuntimeNode, const TMap<UEdGraphNode*, UObject*>& EdToRuntimeMap)
+{
+	if (!OutPin) return;
+	
+	const bool bIsFinishPin = (OutPin->PinName == TEXT("OnFinished"));
+
+	for (UEdGraphPin* LinkedPin : OutPin->LinkedTo)
 	{
-		if (Node && Node->ParentNodes.Num() == 0)
+		UEdGraphNode* LinkedNode = LinkedPin->GetOwningNode();
+		
+		// 情况 A：直接连到另一个状态
+		if (UCancerStateMachineEdNode* EndEdNode = Cast<UCancerStateMachineEdNode>(LinkedNode))
 		{
-			StateMachineData->RootNodes.Add(Node);
+			UCancerStateMachineNode* EndRuntimeNode = Cast<UCancerStateMachineNode>(EdToRuntimeMap.FindRef(EndEdNode));
+			if (EndRuntimeNode)
+			{
+				// 如果没有中间边对象，创建一个默认边
+				UCancerStateMachineEdge* DefaultEdge = NewObject<UCancerStateMachineEdge>(StartRuntimeNode);
+				DefaultEdge->StartNode = StartRuntimeNode;
+				DefaultEdge->EndNode = EndRuntimeNode;
+				DefaultEdge->bIsFinishEdge = bIsFinishPin; // 如果是从 OnFinished 拉出来的，标记为完成转换
+				StartRuntimeNode->OutgoingEdges.Add(DefaultEdge);
+				
+				// 更新父子关系 (对齐 ComboGraph)
+				StartRuntimeNode->ChildrenNodes.AddUnique(EndRuntimeNode);
+				EndRuntimeNode->ParentNodes.AddUnique(StartRuntimeNode);
+				
+				StateMachineData->AllEdges.Add(DefaultEdge);
+			}
+		}
+		// 情况 B：连到了转换节点 (Edge Node)
+		else if (UCancerStateMachineEdNodeEdgeBase* EdEdgeNode = Cast<UCancerStateMachineEdNodeEdgeBase>(LinkedNode))
+		{
+			UCancerStateMachineEdNode* ActualEndEdNode = EdEdgeNode->GetEndNode();
+			UCancerStateMachineEdge* RuntimeEdge = EdEdgeNode->RuntimeEdge;
+			
+			if (ActualEndEdNode && RuntimeEdge)
+			{
+				UCancerStateMachineNode* EndRuntimeNode = Cast<UCancerStateMachineNode>(EdToRuntimeMap.FindRef(ActualEndEdNode));
+				if (EndRuntimeNode)
+				{
+					// 如果是从 OnFinished 引脚连出来的，强制同步边属性
+					if (bIsFinishPin)
+					{
+						EdEdgeNode->bIsFinishEdge = true;
+						RuntimeEdge->bIsFinishEdge = true;
+					}
+
+					RuntimeEdge->StartNode = StartRuntimeNode;
+					RuntimeEdge->EndNode = EndRuntimeNode;
+					StartRuntimeNode->OutgoingEdges.Add(RuntimeEdge);
+					
+					// 更新父子关系 (对齐 ComboGraph)
+					StartRuntimeNode->ChildrenNodes.AddUnique(EndRuntimeNode);
+					EndRuntimeNode->ParentNodes.AddUnique(StartRuntimeNode);
+				}
+			}
 		}
 	}
 }

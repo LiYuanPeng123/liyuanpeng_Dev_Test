@@ -28,3 +28,8 @@ void UAnimNotify_ApplyEffect::Notify(USkeletalMeshComponent* MeshComp, UAnimSequ
 		}
 	}
 }
+
+FString UAnimNotify_ApplyEffect::GetNotifyName_Implementation() const
+{
+	return TEXT("ApplyEffect") + DisplayName;
+}

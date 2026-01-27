@@ -1,11 +1,11 @@
 
-#include "Tasks/BehaviorTree/BTTask_RunCancerStateMachine.h"
+#include "Tasks/BehaviorTree/BTTask_StartCancerStateMachine.h"
 
 #include "AIController.h"
 #include "Tasks/GameplayTask_StartStateMachine.h"
 #include "VisualLogger/VisualLogger.h"
 
-UBTTask_RunCancerStateMachine::UBTTask_RunCancerStateMachine(const FObjectInitializer& ObjectInitializer)
+UBTTask_StartCancerStateMachine::UBTTask_StartCancerStateMachine(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	NodeName = "Run Cancer State Machine";
@@ -16,7 +16,7 @@ UBTTask_RunCancerStateMachine::UBTTask_RunCancerStateMachine(const FObjectInitia
 	bDebugMode = false;
 }
 
-EBTNodeResult::Type UBTTask_RunCancerStateMachine::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_StartCancerStateMachine::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	AAIController* MyController = OwnerComp.GetAIOwner();
 	if (!MyController)
@@ -41,7 +41,7 @@ EBTNodeResult::Type UBTTask_RunCancerStateMachine::ExecuteTask(UBehaviorTreeComp
 	}
 
 	// 绑定结束回调
-	ActiveExecutor->OnStateMachineFinished.AddDynamic(this, &UBTTask_RunCancerStateMachine::HandleStateMachineFinished);
+	ActiveExecutor->OnStateMachineFinished.AddDynamic(this, &UBTTask_StartCancerStateMachine::HandleStateMachineFinished);
 	
 	// 准备启动
 	ActiveExecutor->ReadyForActivation();
@@ -49,24 +49,24 @@ EBTNodeResult::Type UBTTask_RunCancerStateMachine::ExecuteTask(UBehaviorTreeComp
 	return EBTNodeResult::InProgress;
 }
 
-EBTNodeResult::Type UBTTask_RunCancerStateMachine::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_StartCancerStateMachine::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	CleanUp();
 	return Super::AbortTask(OwnerComp, NodeMemory);
 }
 
-void UBTTask_RunCancerStateMachine::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
+void UBTTask_StartCancerStateMachine::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
 {
 	CleanUp();
 	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 }
 
-FString UBTTask_RunCancerStateMachine::GetStaticDescription() const
+FString UBTTask_StartCancerStateMachine::GetStaticDescription() const
 {
 	return FString::Printf(TEXT("%s: %s"), *Super::GetStaticDescription(), StateMachineData ? *StateMachineData->GetName() : TEXT("None"));
 }
 
-void UBTTask_RunCancerStateMachine::HandleStateMachineFinished(UCancerStateMachineNode* FinalState)
+void UBTTask_StartCancerStateMachine::HandleStateMachineFinished(UCancerStateMachineNode* FinalState)
 {
 	if (CachedOwnerComp.IsValid())
 	{
@@ -74,7 +74,7 @@ void UBTTask_RunCancerStateMachine::HandleStateMachineFinished(UCancerStateMachi
 	}
 }
 
-void UBTTask_RunCancerStateMachine::CleanUp()
+void UBTTask_StartCancerStateMachine::CleanUp()
 {
 	if (ActiveExecutor)
 	{

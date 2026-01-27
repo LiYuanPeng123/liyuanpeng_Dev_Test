@@ -40,15 +40,18 @@ protected:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	FName OrientDefaultSection = FName("B");
 
-	UPROPERTY()
-	FVector2D AerialPitchOffset;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FVector2D AerialPitchOffset = FVector2D(45, 45);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Evade")
-	float MaxAerialPitchOffset = 45.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float DefaultEvadeDistance = 400.f;
 
 protected:
-	UPROPERTY(EditAnywhere,BlueprintReadOnly)
-	FName WarpName;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName WarpName = FName("Dodge");
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName GroundWarpName = FName("DodgeRotation");
 	UPROPERTY()
 	FVector StartAccel2D;
 
