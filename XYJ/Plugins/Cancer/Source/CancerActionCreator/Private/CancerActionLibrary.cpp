@@ -1,6 +1,7 @@
 #include "CancerActionLibrary.h"
 #include "Action_DataAssetTemplate.h"
 #include "CancerActionInterface.h"
+#include "CancerActorSubsystem.h"
 #include "CancerAssetManager.h"
 #include "Engine/StreamableManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -26,18 +27,6 @@ void UCancerActionLibrary::LoadActionData(TSoftObjectPtr<UAction_DataAsset> Data
 		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
 		Streamable.RequestAsyncLoad(Paths, FStreamableDelegate());
 	}
-	TSharedPtr<FStreamableHandle> Handle = ActionData->StartAsyncLoadAndExecuteWithHandle(
-		Actor, FSimpleDelegate::CreateLambda(
-			[Actor,ActionData]()
-			{
-				ActionData->PreInitComponent();
-				ActionData->PostInitComponent();
-				ActionData->FinalizeAfterComponent();
-				if (Actor->Implements<UCancerActionInterface>())
-				{
-					ICancerActionInterface::Execute_HandleOnActionCompleted(Actor);
-				}
-			}));
 
 	//加载组件
 	auto Temp = ActionData->StartAsyncLoadAndExecuteWithHandle(
@@ -75,6 +64,13 @@ void UCancerActionLibrary::LoadActionData(TSoftObjectPtr<UAction_DataAsset> Data
 				ICancerActionInterface::Execute_HandleOnActionCompleted(Actor);
 			}
 			OnCompleted.ExecuteIfBound(Actor);
+
+			if (auto ActorSubsystem = Actor->GetWorld()->GetSubsystem<UCancerActorSubsystem>())
+			{
+				
+				ActorSubsystem->RegisterActor(ActionData,Actor);
+			}
+			
 		}));
 }
 

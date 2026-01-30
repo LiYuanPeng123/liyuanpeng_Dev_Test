@@ -23,134 +23,135 @@ void UAnimNotify_LunchProjectile::Notify(USkeletalMeshComponent* MeshComp, UAnim
                                          const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
-    if (!MeshComp->GetWorld()->IsPreviewWorld())
-    {
-        for (const FSpawnProjectileType& SpawnInfo : SpawnProjectiles)
-        {
-            if (SpawnInfo.bDisableActor)
-            {
-                continue;
-            }
-            AActor* SpawnerLocal = nullptr;
+	if (!MeshComp->GetWorld()->IsPreviewWorld())
+	{
+		for (const FSpawnProjectileType& SpawnInfo : SpawnProjectiles)
+		{
+			if (SpawnInfo.bDisableActor)
+			{
+				continue;
+			}
+			AActor* SpawnerLocal = nullptr;
 
 			//优先从对象池中获取
 			if (auto ActorPool = UCancerActorPoolFunctionLibrary::GetCancerActorPoolComponent(MeshComp->GetOwner()))
 			{
-                if (SpawnInfo.ProjectileActorClass)
-                {
-                    SpawnerLocal = ActorPool->GetActorFromPool(SpawnInfo.ProjectileActorClass);
-                }
-            }
-        	if (!SpawnerLocal)
-        	{
-        		if (!SpawnInfo.ProjectileActorClass)
-        		{
-        			continue;
-        		}
-        		SpawnerLocal = MeshComp->GetWorld()->SpawnActor(SpawnInfo.ProjectileActorClass);
-        		if (!SpawnerLocal)
-        		{
-        			continue;
-        		}
-        	}
-        	if (!SpawnerLocal)
-        	{
-        		break;
-        	}
-        	SpawnerLocal->SetOwner(MeshComp->GetOwner());
+				if (SpawnInfo.ProjectileActorClass)
+				{
+					SpawnerLocal = ActorPool->GetActorFromPool(SpawnInfo.ProjectileActorClass);
+				}
+			}
+			if (!SpawnerLocal)
+			{
+				if (!SpawnInfo.ProjectileActorClass)
+				{
+					continue;
+				}
+				SpawnerLocal = MeshComp->GetWorld()->SpawnActor(SpawnInfo.ProjectileActorClass);
+				if (!SpawnerLocal)
+				{
+					continue;
+				}
+			}
+			if (!SpawnerLocal)
+			{
+				break;
+			}
+			SpawnerLocal->SetOwner(MeshComp->GetOwner());
 
-            if (!SpawnerLocal->Implements<UCombatProjectileInterface>())
-            {
-                SpawnerLocal->Destroy();
-                continue;
-            }
-        	
-        	
-        	FTransform Transform;
-            if (MeshComp->DoesSocketExist(SpawnInfo.ProjectileSocketName))
-            {
-                Transform = MeshComp->GetSocketTransform(SpawnInfo.ProjectileSocketName, RTS_World);
-            }
-            else
-            {
-            	Transform = MeshComp->GetOwner()->GetActorTransform();
-            }
-        	
-        	SpawnerLocal->SetActorLocation(Transform.GetLocation() + SpawnInfo.SocketLocationOffset);
-        	FRotator Rotation;
-        	if (SpawnInfo.UseOwnerRotation)
-        	{
-        		Rotation = MeshComp->GetOwner()->GetActorRotation();
-        	}
-        	else
-        	{
-        		Rotation = FRotator(Transform.GetRotation().Rotator() + SpawnInfo.SocketRotationOffset);
-        	}
-        	SpawnerLocal->SetActorRotation(Rotation);
-        	
-            if (auto ProjectileData = SpawnInfo.ProjectileData.LoadSynchronous())
-            {
-                UCancerProjectileData* RuntimeData = DuplicateObject<UCancerProjectileData>(ProjectileData, SpawnerLocal);
-                if (ACancerProjectileActor* ProjectileActor = Cast<ACancerProjectileActor>(SpawnerLocal))
-                {
-                    if (SpawnInfo.bOverrideBezierOffset)
-                    {
-                        RuntimeData->ProjectileType.BezierOffset = SpawnInfo.BezierOffset;
-                    }
-                    if (SpawnInfo.bOverrideMovementParams)
-                    {
-                        RuntimeData->ProjectileType.InitSpeed = SpawnInfo.InitSpeed;
-                        RuntimeData->ProjectileType.MaxSpeed = SpawnInfo.MaxSpeed;
-                        RuntimeData->ProjectileType.Friction = SpawnInfo.Friction;
-                        RuntimeData->ProjectileType.Gravity = SpawnInfo.Gravity;
-                    }
-                    if (SpawnInfo.bOverrideMeshEffect)
-                    {
-                        RuntimeData->ProjectileEffect.MeshRotator = SpawnInfo.MeshRotator;
-                        RuntimeData->ProjectileEffect.MeshScale = SpawnInfo.MeshScale;
-                    }
-                }
-                ICombatProjectileInterface::Execute_InitProjectileData(SpawnerLocal, RuntimeData);
-            }
+			if (!SpawnerLocal->Implements<UCombatProjectileInterface>())
+			{
+				SpawnerLocal->Destroy();
+				continue;
+			}
 
-            ICombatProjectileInterface::Execute_Launch(SpawnerLocal);
-            if (SpawnerLocal->Implements<UPoolableActorInterface>())
-            {
-                IPoolableActorInterface::Execute_Activate(SpawnerLocal);
-            }
 
-            for (auto Damage : SpawnInfo.Damages)
-            {
-                if (!Damage) continue;
-                auto DamageParameter = Damage->DamageParameter;
-                if (DamageParameter.TranceInfo.CombatAbilitySource == EDamageDetectionSource::Projectile)
-                {
-                    auto Mesh = ICombatProjectileInterface::Execute_GetProjectileMesh(SpawnerLocal);
-                    UCancerMeleeScan* MeleeScan = CreateMeleeScanInstance(
-                        MeshComp->GetOwner(), MeshComp->GetOwner(), Damage,
-                        Mesh, 1);
+			FTransform Transform;
+			if (MeshComp->DoesSocketExist(SpawnInfo.ProjectileSocketName))
+			{
+				Transform = MeshComp->GetSocketTransform(SpawnInfo.ProjectileSocketName, RTS_World);
+			}
+			else
+			{
+				Transform = MeshComp->GetOwner()->GetActorTransform();
+			}
 
-                    MeleeScan->bEnableDebug = ProjectileScanVar.GetValueOnGameThread();
-                    if (MeleeScan->HasValidScanData())
-                        ICombatProjectileInterface::Execute_RegisterMeleeScanRequest(SpawnerLocal, MeleeScan);
-                }
-            }
-        }
-    }
+			SpawnerLocal->SetActorLocation(Transform.GetLocation() + SpawnInfo.SocketLocationOffset);
+			FRotator Rotation;
+			if (SpawnInfo.UseOwnerRotation)
+			{
+				Rotation = MeshComp->GetOwner()->GetActorRotation();
+			}
+			else
+			{
+				Rotation = FRotator(Transform.GetRotation().Rotator() + SpawnInfo.SocketRotationOffset);
+			}
+			SpawnerLocal->SetActorRotation(Rotation);
+
+			if (auto ProjectileData = SpawnInfo.ProjectileData.LoadSynchronous())
+			{
+				UCancerProjectileData* RuntimeData = DuplicateObject<UCancerProjectileData>(
+					ProjectileData, SpawnerLocal);
+				if (ACancerProjectileActor* ProjectileActor = Cast<ACancerProjectileActor>(SpawnerLocal))
+				{
+					if (SpawnInfo.bOverrideBezierOffset)
+					{
+						RuntimeData->ProjectileType.BezierOffset = SpawnInfo.BezierOffset;
+					}
+					if (SpawnInfo.bOverrideMovementParams)
+					{
+						RuntimeData->ProjectileType.InitSpeed = SpawnInfo.InitSpeed;
+						RuntimeData->ProjectileType.MaxSpeed = SpawnInfo.MaxSpeed;
+						RuntimeData->ProjectileType.Friction = SpawnInfo.Friction;
+						RuntimeData->ProjectileType.Gravity = SpawnInfo.Gravity;
+					}
+					if (SpawnInfo.bOverrideMeshEffect)
+					{
+						RuntimeData->ProjectileEffect.MeshRotator = SpawnInfo.MeshRotator;
+						RuntimeData->ProjectileEffect.MeshScale = SpawnInfo.MeshScale;
+					}
+				}
+				ICombatProjectileInterface::Execute_InitProjectileData(SpawnerLocal, RuntimeData);
+			}
+
+			ICombatProjectileInterface::Execute_Launch(SpawnerLocal);
+			if (SpawnerLocal->Implements<UPoolableActorInterface>())
+			{
+				IPoolableActorInterface::Execute_Activate(SpawnerLocal);
+			}
+
+			for (auto Damage : SpawnInfo.Damages)
+			{
+				if (!Damage) continue;
+				auto DamageParameter = Damage->DamageParameter;
+				if (DamageParameter.TranceInfo.CombatAbilitySource == EDamageDetectionSource::Projectile)
+				{
+					auto Mesh = ICombatProjectileInterface::Execute_GetProjectileMesh(SpawnerLocal);
+					UCancerMeleeScan* MeleeScan = CreateMeleeScanInstance(
+						MeshComp->GetOwner(), MeshComp->GetOwner(), Damage,
+						Mesh, 1);
+
+					MeleeScan->bEnableDebug = ProjectileScanVar.GetValueOnGameThread();
+					if (MeleeScan->HasValidScanData())
+						ICombatProjectileInterface::Execute_RegisterMeleeScanRequest(SpawnerLocal, MeleeScan);
+				}
+			}
+		}
+	}
 
 #if WITH_EDITOR
 	if (MeshComp && MeshComp->GetOwner() && MeshComp->GetWorld() && MeshComp->GetWorld()->IsPreviewWorld())
 	{
-        StopPreviewScanTimer();
-        MeleeScans.Empty();
-        for (AActor* Old : Spawners)
-        {
-            if (Old)
-            {
-                Old->Destroy();
-            }
-        }
-        Spawners.Empty();
+		StopPreviewScanTimer();
+		MeleeScans.Empty();
+		for (AActor* Old : Spawners)
+		{
+			if (Old)
+			{
+				Old->Destroy();
+			}
+		}
+		Spawners.Empty();
 
 		const FVector DefaultPos = MeshComp->GetSocketLocation("root") + TargetOffset;
 
@@ -171,90 +172,91 @@ void UAnimNotify_LunchProjectile::Notify(USkeletalMeshComponent* MeshComp, UAnim
 			Sphere->SetWorldLocation(DefaultPos);
 		}
 
-        for (const FSpawnProjectileType& SpawnInfo : SpawnProjectiles)
-        {
-            if (SpawnInfo.bDisableActor || SpawnInfo.bEnable)
-            {
-                continue;
-            }
-            if (!IsValid(SpawnInfo.ProjectileActorClass))
-            {
-                continue;
-            }
-            AActor* SpawnerLocal = MeshComp->GetWorld()->SpawnActor(SpawnInfo.ProjectileActorClass);
-            if (!SpawnerLocal)
-            {
-                continue;
-            }
-            SpawnerLocal->SetOwner(MeshComp->GetOwner());
-            if (!SpawnerLocal->Implements<UCombatProjectileInterface>())
-            {
-                SpawnerLocal->Destroy();
-                continue;
-            }
-            if (MeshComp->DoesSocketExist(SpawnInfo.ProjectileSocketName))
-            {
-                FTransform Transform = MeshComp->GetSocketTransform(SpawnInfo.ProjectileSocketName, RTS_World);
-                SpawnerLocal->SetActorLocation(Transform.GetLocation() + SpawnInfo.SocketLocationOffset);
-                FRotator Rotation = FRotator(Transform.GetRotation().Rotator() + SpawnInfo.SocketRotationOffset);
-                SpawnerLocal->SetActorRotation(Rotation);
-            }
+		for (const FSpawnProjectileType& SpawnInfo : SpawnProjectiles)
+		{
+			if (SpawnInfo.bDisableActor || SpawnInfo.bEnable)
+			{
+				continue;
+			}
+			if (!IsValid(SpawnInfo.ProjectileActorClass))
+			{
+				continue;
+			}
+			AActor* SpawnerLocal = MeshComp->GetWorld()->SpawnActor(SpawnInfo.ProjectileActorClass);
+			if (!SpawnerLocal)
+			{
+				continue;
+			}
+			SpawnerLocal->SetOwner(MeshComp->GetOwner());
+			if (!SpawnerLocal->Implements<UCombatProjectileInterface>())
+			{
+				SpawnerLocal->Destroy();
+				continue;
+			}
+			if (MeshComp->DoesSocketExist(SpawnInfo.ProjectileSocketName))
+			{
+				FTransform Transform = MeshComp->GetSocketTransform(SpawnInfo.ProjectileSocketName, RTS_World);
+				SpawnerLocal->SetActorLocation(Transform.GetLocation() + SpawnInfo.SocketLocationOffset);
+				FRotator Rotation = FRotator(Transform.GetRotation().Rotator() + SpawnInfo.SocketRotationOffset);
+				SpawnerLocal->SetActorRotation(Rotation);
+			}
 
-            if (SpawnerLocal && PreviewSphere)
-            {
-                const FVector NewLocation = PreviewSphere->GetComponentLocation();
-                ICombatProjectileInterface::Execute_SetTargetLocation(SpawnerLocal, NewLocation);
-            }
-        	float Duration = 0.f;
-            if (auto ProjectileData = SpawnInfo.ProjectileData.LoadSynchronous())
-            {
-                UCancerProjectileData* RuntimeData = DuplicateObject<UCancerProjectileData>(ProjectileData, SpawnerLocal);
-            	Duration = RuntimeData->ProjectileType.LifeTime;
-                if (ACancerProjectileActor* ProjectileActor = Cast<ACancerProjectileActor>(SpawnerLocal))
-                {
-                    if (RuntimeData->ProjectileType.AimingMode != EProjectileAimingMode::Forward)
-                    {
-                        RuntimeData->ProjectileType.AimingMode = EProjectileAimingMode::Location;
-                    }
-                    if (SpawnInfo.bOverrideBezierOffset)
-                    {
-                        RuntimeData->ProjectileType.BezierOffset = SpawnInfo.BezierOffset;
-                    }
-                    if (SpawnInfo.bOverrideMovementParams)
-                    {
-                        RuntimeData->ProjectileType.InitSpeed = SpawnInfo.InitSpeed;
-                        RuntimeData->ProjectileType.MaxSpeed = SpawnInfo.MaxSpeed;
-                        RuntimeData->ProjectileType.Friction = SpawnInfo.Friction;
-                        RuntimeData->ProjectileType.Gravity = SpawnInfo.Gravity;
-                    }
-                    if (SpawnInfo.bOverrideMeshEffect)
-                    {
-                        RuntimeData->ProjectileEffect.MeshRotator = SpawnInfo.MeshRotator;
-                        RuntimeData->ProjectileEffect.MeshScale = SpawnInfo.MeshScale;
-                    }
-                }
-                ICombatProjectileInterface::Execute_InitProjectileData(SpawnerLocal, RuntimeData);
-            }
+			if (SpawnerLocal && PreviewSphere)
+			{
+				const FVector NewLocation = PreviewSphere->GetComponentLocation();
+				ICombatProjectileInterface::Execute_SetTargetLocation(SpawnerLocal, NewLocation);
+			}
+			float Duration = 0.f;
+			if (auto ProjectileData = SpawnInfo.ProjectileData.LoadSynchronous())
+			{
+				UCancerProjectileData* RuntimeData = DuplicateObject<UCancerProjectileData>(
+					ProjectileData, SpawnerLocal);
+				Duration = RuntimeData->ProjectileType.LifeTime;
+				if (ACancerProjectileActor* ProjectileActor = Cast<ACancerProjectileActor>(SpawnerLocal))
+				{
+					if (RuntimeData->ProjectileType.AimingMode != EProjectileAimingMode::Forward)
+					{
+						RuntimeData->ProjectileType.AimingMode = EProjectileAimingMode::Location;
+					}
+					if (SpawnInfo.bOverrideBezierOffset)
+					{
+						RuntimeData->ProjectileType.BezierOffset = SpawnInfo.BezierOffset;
+					}
+					if (SpawnInfo.bOverrideMovementParams)
+					{
+						RuntimeData->ProjectileType.InitSpeed = SpawnInfo.InitSpeed;
+						RuntimeData->ProjectileType.MaxSpeed = SpawnInfo.MaxSpeed;
+						RuntimeData->ProjectileType.Friction = SpawnInfo.Friction;
+						RuntimeData->ProjectileType.Gravity = SpawnInfo.Gravity;
+					}
+					if (SpawnInfo.bOverrideMeshEffect)
+					{
+						RuntimeData->ProjectileEffect.MeshRotator = SpawnInfo.MeshRotator;
+						RuntimeData->ProjectileEffect.MeshScale = SpawnInfo.MeshScale;
+					}
+				}
+				ICombatProjectileInterface::Execute_InitProjectileData(SpawnerLocal, RuntimeData);
+			}
 
-            ICombatProjectileInterface::Execute_Launch(SpawnerLocal);
-            Spawners.Add(SpawnerLocal);
+			ICombatProjectileInterface::Execute_Launch(SpawnerLocal);
+			Spawners.Add(SpawnerLocal);
 
-            for (auto Damage : SpawnInfo.Damages)
-            {
-                if (!Damage) continue;
-                auto DamageParameter = Damage->DamageParameter;
-                if (DamageParameter.TranceInfo.CombatAbilitySource == EDamageDetectionSource::Projectile)
-                {
-                    auto Mesh = ICombatProjectileInterface::Execute_GetProjectileMesh(SpawnerLocal);
-                    UCancerMeleeScan* MeleeScan = CreateMeleeScanInstance(
-                        MeshComp->GetOwner(), MeshComp->GetOwner(), Damage,
-                        Mesh,Duration );
-                    MeleeScan->bEnableDebug = Damage->bEnableDebug;
-                    MeleeScans.Add(MeleeScan);
-                }
-            }
-        }
-    }
+			for (auto Damage : SpawnInfo.Damages)
+			{
+				if (!Damage) continue;
+				auto DamageParameter = Damage->DamageParameter;
+				if (DamageParameter.TranceInfo.CombatAbilitySource == EDamageDetectionSource::Projectile)
+				{
+					auto Mesh = ICombatProjectileInterface::Execute_GetProjectileMesh(SpawnerLocal);
+					UCancerMeleeScan* MeleeScan = CreateMeleeScanInstance(
+						MeshComp->GetOwner(), MeshComp->GetOwner(), Damage,
+						Mesh, Duration);
+					MeleeScan->bEnableDebug = Damage->bEnableDebug;
+					MeleeScans.Add(MeleeScan);
+				}
+			}
+		}
+	}
 
 	// 启动预览扫描定时器：按设定间隔在预览世界中调用 ScanForTargets
 	StartPreviewScanTimer(MeshComp);
@@ -265,6 +267,7 @@ UCancerMeleeScan* UAnimNotify_LunchProjectile::CreateMeleeScanInstance_Implement
 	UCancerDamageType* DamageType, UMeshComponent* SourceMesh, float Duration) const
 {
 	auto DamageParameter = DamageType->DamageParameter;
+	DamageType->DamageParameter.HitInfo.SourceActor = Owner;
 	DamageType->DamageParameter.HitInfo.SourceActor = Owner;
 	TSubclassOf<UCancerMeleeScan> ScanClass = DamageParameter.TranceInfo.MeleeScanClass;
 	if (!IsValid(ScanClass))

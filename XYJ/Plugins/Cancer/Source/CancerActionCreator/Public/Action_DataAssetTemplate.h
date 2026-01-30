@@ -111,6 +111,14 @@ class CANCERACTIONCREATOR_API UAction_DataAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
+	//Actor的唯一标识 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Action, DisplayName="ActorTag")
+	FGameplayTag ActorTag;
+
+	//Actor附带查询规则 (势力,属性等)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Action, DisplayName="ActorTagContainer")
+	FGameplayTagContainer ActorTagContainer;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Action, DisplayName="ActorClass")
 	TSubclassOf<AActor> ActorClass = AActor::StaticClass();
 

@@ -12,6 +12,11 @@
 
 class AAIController;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_SevenParams(FOnCancerMovementModeChangedDelegate, class ACancerCharacter*, Character,
+                                               EMovementMode, PrevMovementMode, uint8, PreviousCustomMode, FGameplayTag,
+                                               PrevTag, EMovementMode, NewMovementMode, uint8, NewCustomMode,
+                                               FGameplayTag, NewTag);
+
 UCLASS()
 class CANCERGAMEPLAY_API ACancerCharacter : public ACharacter, public ICancerTeamAgentInterface
 {
@@ -22,12 +27,17 @@ public:
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
 
 	void SetMovementModeTag(EMovementMode MovementMode, uint8 CustomMovementMode, bool bTagEnabled);
+	FGameplayTag GetMovementModeTag(EMovementMode MovementMode, uint8 CustomMovementMode) const;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnCancerMovementModeChangedDelegate OnMovementModeChangedDelegate;
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Movement|Tags")
 	TMap<TEnumAsByte<EMovementMode>, FGameplayTag> MovementModeTagMap;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Movement|Tags")
 	TMap<uint8, FGameplayTag> CustomMovementModeTagMap;
-	
+
 #pragma region 团队接口
 	virtual FOnCancerTeamIndexChangedDelegate* GetOnTeamIndexChangedDelegate() override
 	{

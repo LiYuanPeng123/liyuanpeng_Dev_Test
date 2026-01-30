@@ -543,6 +543,8 @@ FVector UCancerGameplayAbility::GetMovementInput() const
 
 FName UCancerGameplayAbility::GetLockTargetSectionName(const FVector& InVector) const
 {
+	if (InVector.IsNearlyZero())
+		return FName("B");
 	if (auto LockTargetComponent = GetLockingTargetComponentFromActorInfo())
 	{
 		if (LockTargetComponent->IsLockTarget())

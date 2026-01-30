@@ -1,5 +1,9 @@
 #include "XYJ_GameMode.h"
+
+#include "CancerActionLibrary.h"
+#include "CancerActorSubsystem.h"
 #include "CancerAssetManager.h"
+#include "CancertGlobalAbilitySystem.h"
 #include "XYJWorldSetting.h"
 #include "XYJ/Character/XYJ_Character.h"
 #include "CancerActionCreator/Public/Action_DataAssetTemplate.h"
@@ -28,6 +32,15 @@ UAction_DataAsset* AXYJ_GameMode::GetEffectivePawnData() const
 	return UCancerAssetManager::Get().GetAsset(DefaultPawnData);
 }
 
+TSoftObjectPtr<UAction_DataAsset> AXYJ_GameMode::GetEffectivePawnDataSoft() const
+{
+	if (auto WorldSetting = Cast<AXYJWorldSetting>(GetWorldSettings()))
+	{
+		return WorldSetting->PawnData;
+	}
+	return DefaultPawnData;
+}
+
 UClass* AXYJ_GameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
 	if (auto Data = GetEffectivePawnData())
@@ -36,7 +49,6 @@ UClass* AXYJ_GameMode::GetDefaultPawnClassForController_Implementation(AControll
 	}
 	return Super::GetDefaultPawnClassForController_Implementation(InController);
 }
-
 
 void AXYJ_GameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
@@ -54,76 +66,17 @@ void AXYJ_GameMode::HandPawnFinish(APawn* StartPawn)
 {
 	if (auto ActionData = GetEffectivePawnData())
 	{
-		TSharedPtr<FStreamableHandle> Handle = ActionData->StartAsyncLoadAndExecuteWithHandle(
-			StartPawn, FSimpleDelegate::CreateLambda(
-				[this, StartPawn, ActionData]()
-				{
-					ActionData->PreInitComponent();
-					ActionData->PostInitComponent();
-					ActionData->FinalizeAfterComponent();
-					if (AXYJ_Character* Character = Cast<AXYJ_Character>(StartPawn))
-					{
-						if (auto MovementComponent = Character->GetCharacterMovement())
-							Character->OnMovementModeChanged(
-								MovementComponent->MovementMode,
-								MovementComponent->CustomMovementMode);
-						if (Character->Implements<UCancerActionInterface>())
-						{
-							ICancerActionInterface::Execute_HandleOnActionCompleted(Character);
-						}
-					}
-					if (StartPawn)
-					{
-						UAIPerceptionStimuliSourceComponent* Stimuli = StartPawn->FindComponentByClass<UAIPerceptionStimuliSourceComponent>();
-						if (!Stimuli)
-						{
-							Stimuli = NewObject<UAIPerceptionStimuliSourceComponent>(StartPawn);
-							Stimuli->RegisterComponent();
-						}
-						if (Stimuli)
-						{
-							Stimuli->RegisterForSense(UAISense_Sight::StaticClass());
-						}
-					}
-					PawnLoadHandles.Remove(StartPawn);
-				}));
-		if (Handle.IsValid())
-		{
-			PawnLoadHandles.Add(StartPawn, Handle);
-		}
+		FOnActionCompled OnActionCompled;
+		OnActionCompled.BindDynamic(this,&ThisClass::HandFinish);
+		UCancerActionLibrary::LoadActionData(GetEffectivePawnDataSoft(), StartPawn, OnActionCompled);
 	}
-}
-
-
-float AXYJ_GameMode::GetWorldLoadProgress() const
-{
-	if (PawnLoadHandles.Num() == 0) return 1.f;
-	double Sum = 0.0;
-	int32 Count = 0;
-	for (const auto& Pair : PawnLoadHandles)
-	{
-		if (Pair.Key.IsValid() && Pair.Value.IsValid())
-		{
-			Sum += Pair.Value->GetProgress();
-			++Count;
-		}
-	}
-	return Count > 0 ? static_cast<float>(Sum / Count) : 1.f;
 }
 
 void AXYJ_GameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	const float Progress = GetWorldLoadProgress();
-	if (!FMath::IsNearlyEqual(Progress, LastProgress))
-	{
-		OnPawnLoadProgress.Broadcast(Progress);
-		LastProgress = Progress;
-	}
-	if (!bLoadCompleted && Progress >= 1.0f)
-	{
-		OnPawnLoadProgress.Broadcast(1.0f);
-		bLoadCompleted = true;
-		SetActorTickEnabled(false);
-	}
+}
+
+void AXYJ_GameMode::HandFinish_Implementation(AActor* Actor)
+{
 }

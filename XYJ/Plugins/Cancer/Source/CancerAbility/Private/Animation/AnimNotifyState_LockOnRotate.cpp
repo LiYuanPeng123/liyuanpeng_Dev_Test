@@ -79,6 +79,7 @@ void UAnimNotifyState_LockOnRotate::NotifyTick(USkeletalMeshComponent* MeshComp,
 	Direction.Z = 0.f;
 
 	if (Direction.IsNearlyZero())
+		
 	{
 		return;
 	}

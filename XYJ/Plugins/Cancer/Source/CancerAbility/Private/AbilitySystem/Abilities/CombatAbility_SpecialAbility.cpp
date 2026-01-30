@@ -3,6 +3,11 @@
 #include "Abilities/Tasks/AbilityTask_WaitInputRelease.h"
 #include "GameFramework/CancerCombo.h"
 
+UCombatAbility_SpecialAbility::UCombatAbility_SpecialAbility()
+{
+	bPlayMontageWhenActivated = false;
+}
+
 void UCombatAbility_SpecialAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                                     const FGameplayAbilityActorInfo* ActorInfo,
                                                     const FGameplayAbilityActivationInfo ActivationInfo,
@@ -26,7 +31,7 @@ void UCombatAbility_SpecialAbility::ActivateAbility(const FGameplayAbilitySpecHa
 	if (!CurrentWeaponData)
 	{
 		UE_LOG(LogAbilitySystemComponent, Error, TEXT("Special Ability Combo tag not found[%s]"),
-			*SpecialAbility->ComboTag.ToString());
+		       *SpecialAbility->ComboTag.ToString());
 		K2_EndAbility();
 		return;
 	}

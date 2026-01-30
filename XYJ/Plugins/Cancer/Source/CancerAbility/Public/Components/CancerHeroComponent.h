@@ -24,7 +24,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void InitializeWithAbilitySystem();
-	
+
 #pragma region Boss相关
 	UPROPERTY(BlueprintReadOnly)
 	TSubclassOf<class UUserWidget> BossWidgetClass;
@@ -40,7 +40,7 @@ public:
 #pragma region 连击
 	UPROPERTY()
 	int32 ComboIndex = 0;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float InterpSpeed = 10;
 
@@ -62,37 +62,37 @@ public:
 	void OnHandleTrigger(const FGameplayTag Tag, int32 NewCount);
 	UFUNCTION(BlueprintNativeEvent)
 	void OnHandleExit(const FGameplayTag Tag, int32 NewCount);
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, DisplayName="进入状态标签")
 	FGameplayTagContainer TriggerTags;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, DisplayName="退出状态标签")
 	FGameplayTagContainer ExitTags;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, DisplayName="战斗状态标签")
 	FGameplayTag ComboTag;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, DisplayName="退出时间")
 	float ExitCombatTime = 5.f;
-	
+
 	UPROPERTY()
 	float ExitCombatRemainingTime = 0.f;
-	
+
 	UPROPERTY()
 	bool bWeaponDrawn = false;
-	
+
 	UFUNCTION(BlueprintCallable)
 	void ExecuteDrawWeapon();
 	UFUNCTION(BlueprintCallable)
 	void ExecutePutAwayWeapon();
-	
+
 	//进入战斗
 	UFUNCTION(BlueprintNativeEvent)
 	void OnTriggerEnterCombo();
 	//离开战斗
 	UFUNCTION(BlueprintNativeEvent)
 	void OnTriggerExitCombo();
- 	
+
 #pragma endregion
 
 #pragma region 连续格挡
@@ -112,6 +112,29 @@ public:
 
 	FTimerHandle IncrementBlockTimerHandle;
 
+#pragma endregion
+
+#pragma region 空中踩踏
+	UPROPERTY(BlueprintReadOnly)
+	int32 SetupOnIndex = 0;
+	UPROPERTY(BlueprintReadOnly)
+	int32 SetupOnMaxIndex = 2;
+	UFUNCTION(BlueprintCallable)
+	void SetupOnIncrement(int32 InCount = 1)
+	{
+		SetupOnIndex += InCount;
+		SetupOnIndex = FMath::Clamp(SetupOnIndex, 0, MaxBlockIndex);
+	};
+	UFUNCTION(BlueprintCallable)
+	void SetupOnReset(int32 InCount = 0)
+	{
+		SetupOnIndex = InCount;
+	}
+	UFUNCTION(BlueprintCallable)
+	bool CanSetupOn() const
+	{
+		return SetupOnIndex < MaxBlockIndex;
+	}
 #pragma endregion
 
 #pragma region  摄像机
@@ -144,14 +167,14 @@ public:
 	AActor* CombatTarget;
 	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Components|Combat Manager")
 	const AActor* GetCombatTarget();
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Cancer Combat|Components|Combat Manager")
 	void SetCombatTarget(AActor* NewCombatTarget);
-	
+
 	bool HasCombatTarget() const;
 
-	void RotateToTarget( float FrameDeltaTime);
-	
+	void RotateToTarget(float FrameDeltaTime);
+
 #pragma endregion
 
 #pragma region 伤害注册

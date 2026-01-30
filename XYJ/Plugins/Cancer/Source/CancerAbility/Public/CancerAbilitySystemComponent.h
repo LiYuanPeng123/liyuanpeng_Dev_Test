@@ -65,6 +65,7 @@ FORCEINLINE uint32 GetContainerTypeHash(const FGameplayTagContainer& Container)
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInputPressed, FCancerActiveAbilityInfo, ActiveAbilityInfo);
 
+
 /*
  * 技能组件
  */
@@ -74,6 +75,9 @@ class CANCERABILITY_API UCancerAbilitySystemComponent : public UAbilitySystemCom
 	GENERATED_BODY()
 
 public:
+	// 由于我们没有任何方式知道某类技能激活 当需要监听技能激活时 需要从这里进行判断
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameplayEventHandled, FGameplayTag, EventTag, const FGameplayEventData& , Payload);
+	
 #pragma region Debug激活技能优先级查询
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category="Ability|Priority")
 	FOnInputPressed OnInputPressed;
@@ -103,6 +107,9 @@ public:
 	//~End of UAbilitySystemComponent interface
 
 	void BindToInputManager();
+	
+	UPROPERTY(BlueprintAssignable,BlueprintReadWrite)
+	FOnGameplayEventHandled OnGameplayEventHandled;
 
 	//获取激活的实例技能
 	UFUNCTION(BlueprintCallable)

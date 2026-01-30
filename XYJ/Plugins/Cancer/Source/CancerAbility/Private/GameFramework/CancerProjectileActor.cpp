@@ -30,6 +30,7 @@ void ACancerProjectileActor::HandleScanTargetsReceived_Implementation(const UCan
 			return;
 		}
 		DamageType->DamageParameter.HitInfo.SourceActor = GetOwner();
+		DamageType->DamageParameter.HitInfo.CapActor = this;
 		AActor* InstigatorActor = GetOwner();
 		for (int32 Idx = 0; Idx < Data.Num(); ++Idx)
 		{

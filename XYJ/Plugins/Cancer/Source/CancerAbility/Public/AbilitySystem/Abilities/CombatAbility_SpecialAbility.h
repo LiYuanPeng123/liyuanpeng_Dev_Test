@@ -13,6 +13,7 @@ class CANCERABILITY_API UCombatAbility_SpecialAbility : public UCancerPlayAnimat
 {
 	GENERATED_BODY()
 
+	UCombatAbility_SpecialAbility();
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,
 	                             const FGameplayEventData* TriggerEventData) override;

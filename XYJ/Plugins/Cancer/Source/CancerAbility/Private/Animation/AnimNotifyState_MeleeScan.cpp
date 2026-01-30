@@ -170,6 +170,7 @@ UCancerMeleeScan* UAnimNotifyState_MeleeScan::CreateMeleeScanInstance_Implementa
 {
 	auto DamageParameter = DamageType->DamageParameter;
 	DamageType->DamageParameter.HitInfo.SourceActor = Owner;
+	DamageType->DamageParameter.HitInfo.CapActor = Owner;
 	TSubclassOf<UCancerMeleeScan> ScanClass = DamageParameter.TranceInfo.MeleeScanClass;
 	if (!IsValid(ScanClass))
 	{

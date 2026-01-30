@@ -44,6 +44,7 @@ public class CancerActionCreator : ModuleRules
 				"SlateCore",
 				"CancerInventory", 
 				"CancerAsset",
+				"CancerCore",
 				"AIModule",
 				"GameplayAbilities",
 				// ... add private dependencies that you statically link with here ...	

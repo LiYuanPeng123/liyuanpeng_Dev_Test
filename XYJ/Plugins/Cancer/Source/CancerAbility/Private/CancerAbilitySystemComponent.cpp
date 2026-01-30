@@ -154,6 +154,11 @@ int32 UCancerAbilitySystemComponent::HandleGameplayEvent(FGameplayTag EventTag, 
 	{
 		UE_VLOG(GetOwner(), LogAbilitySystemComponent, Log, TEXT("Event: %s"), *EventTag.ToString());
 	}
+	if (Payload)
+	{
+		OnGameplayEventHandled.Broadcast(EventTag,*Payload);
+	}
+	
 	return Super::HandleGameplayEvent(EventTag, Payload);
 }
 

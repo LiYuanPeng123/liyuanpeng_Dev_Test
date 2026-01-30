@@ -1,5 +1,4 @@
 ﻿#include "CancerGameMode.h"
-
 #include "CancerCharacter.h"
 #include "CancerPlayerController.h"
 #include "CancerPlayerStart.h"

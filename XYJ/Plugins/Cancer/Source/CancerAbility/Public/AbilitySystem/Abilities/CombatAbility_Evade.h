@@ -52,9 +52,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName GroundWarpName = FName("DodgeRotation");
-	UPROPERTY()
+	UPROPERTY(Transient)
 	FVector StartAccel2D;
-
+	UPROPERTY()
+	double ActorYaw;
+	UPROPERTY()
+	FName CurSection;
+	UPROPERTY()
+	bool bOrientToMovement = true;
 
 private:
 };

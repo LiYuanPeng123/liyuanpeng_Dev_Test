@@ -5,7 +5,6 @@
 #include "GameplayAbilitySpecHandle.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "GameFramework/CancerDamageType.h"
-#include "UIExtensionSystem.h"
 #include "CancertGlobalAbilitySystem.generated.h"
 
 struct FCancerComboInfo;
@@ -39,6 +38,58 @@ struct FGlobalAppliedEffectList
 	void RemoveFromAll();
 };
 
+USTRUCT()
+struct FAppliedSlomoHandle
+{
+	GENERATED_BODY()
+	FAppliedSlomoHandle()
+	{
+		Attacker = nullptr;
+		Victim = nullptr;
+	};
+	explicit FAppliedSlomoHandle(const FCancerComboInfo& Info,
+	                             AActor* InAttacker = nullptr, AActor* InVictim = nullptr)
+	{
+		Guid = FGuid::NewGuid();
+		ComboInfo = Info;
+		Attacker = InAttacker;
+		Victim = InVictim;
+	}
+
+	bool operator==(const FAppliedSlomoHandle& Other) const
+	{
+		return Guid == Other.Guid;
+	}
+
+	bool operator!=(const FAppliedSlomoHandle& Other) const
+	{
+		return Guid != Other.Guid;
+	}
+
+	FGuid GetGuid() const
+	{
+		return Guid;
+	}
+
+	bool IsValid() const
+	{
+		return Guid.IsValid();
+	}
+
+	UPROPERTY()
+	FCancerComboInfo ComboInfo;
+	UPROPERTY()
+	AActor* Attacker;
+	UPROPERTY()
+	AActor* Victim;
+
+	UPROPERTY()
+	float ElapsedTime = 0.f;
+
+private:
+	UPROPERTY()
+	FGuid Guid;
+};
 
 UCLASS()
 class CANCERABILITY_API UCancerGlobalAbilitySystem : public UTickableWorldSubsystem
@@ -69,14 +120,30 @@ public:
 	// -- Begin Subsystem implementation
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	// -- End Subsystem implementation
-
-	UFUNCTION(BlueprintCallable, Category="Cancer|CombatSlomo")
-	void K2_CombatSlomo(AActor* Attacker, AActor*
-	                    Victim, const
-	                    FCancerComboInfo& ComboInfo);
-	
 	// 通过名字找到Tag  Tag的名字配置在项目设置 -- GamplayTag 里的表格上
 	static FGameplayTag GetTagByName(const FName TagName);
+
+
+#pragma region  顿帧
+	
+public:
+	// 更新顿帧逻辑
+	void UpdateSlomo(float DeltaTime);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	FGuid RegisterSlomo(AActor* Attacker, AActor* Victim, const FCancerComboInfo& ComboInfo);
+
+protected:
+	UFUNCTION()
+	void RemoveSlomo(FGuid Guid);
+
+	UPROPERTY()
+	TMap<FGuid, FAppliedSlomoHandle> AppliedSlomo;
+
+	UPROPERTY()
+	TMap<FGuid, FTimerHandle> SlomoTimerHandles;
+#pragma endregion
+	
 
 protected:
 	//~ Begin FTickableGameObject Interface
@@ -88,28 +155,15 @@ protected:
 
 	virtual void InitializeStream();
 
-	UFUNCTION(BlueprintPure, Category = "Ninja Combat")
+	UFUNCTION(BlueprintPure, Category = " Combat")
 	float GetRandomFloatInRange(float Min, float Max) const;
 
-	UFUNCTION()
-	void HandleSlomo(AActor* Attacker, AActor* Victim, const FCancerComboInfo& ComboInfo);
+
+
 
 private:
-	UPROPERTY(Transient)
-	TMap<TWeakObjectPtr<AActor>, float> BossNextAllowedShowTime;
-
-	FTimerHandle TimeHandle;
-
-	FTimerDelegate TimerDelegate;
-
-	TWeakObjectPtr<AActor> CachedAttacker;
-
-	TWeakObjectPtr<AActor> CachedVictim;
-
-	float Elapsed{0.f};
-	FCancerComboInfo CurrentComboInfo;
-
 	FRandomStream RandomStream;
+
 	UPROPERTY()
 	TMap<TSubclassOf<UGameplayAbility>, FGlobalAppliedAbilityList> AppliedAbilities;
 
@@ -118,6 +172,6 @@ private:
 
 	UPROPERTY()
 	TArray<TObjectPtr<UCancerAbilitySystemComponent>> RegisteredASCs;
-	
-	static TMap<FName,FGameplayTag> GlobalTagNameMap;
+
+	static TMap<FName, FGameplayTag> GlobalTagNameMap;
 };

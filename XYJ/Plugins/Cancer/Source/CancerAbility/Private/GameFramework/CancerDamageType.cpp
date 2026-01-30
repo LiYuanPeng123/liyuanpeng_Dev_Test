@@ -1,6 +1,7 @@
 
 #include "GameFramework/CancerDamageType.h"
 
+
 UCancerDamageType::UCancerDamageType()
 {
 	DamageParameter.TranceInfo.MeleeScanClass = UCancerMeleeScan::StaticClass();

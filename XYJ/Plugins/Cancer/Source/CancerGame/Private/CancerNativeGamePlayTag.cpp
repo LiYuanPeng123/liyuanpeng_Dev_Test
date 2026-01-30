@@ -183,6 +183,8 @@ UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_State_UnlimitedHealth, TEXT("Combat.State.Unli
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_State_UnlimitedEnergy, TEXT("Combat.State.UnlimitedEnergy"));
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_State_UnlimitedSoul, TEXT("Combat.State.UnlimitedSoul"));
 
+// 妲己的妖遁状态
+UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_State_DaJi_YaoDun, "Combat.State.Daji.YaoDun");
 
 // 伤害反馈信息
 UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_DamageFeedBack_Invulnerable, TEXT("Combat.DamageFeedback.Invulnerable"));
@@ -195,9 +197,9 @@ UE_DEFINE_GAMEPLAY_TAG(Tag_Combat_DamageFeedBack_NoSoul, TEXT("Combat.DamageFeed
 UE_DEFINE_GAMEPLAY_TAG(Tag_Input_BlockAbility, TEXT("Input.BlockAbility"));
 
 
-UE_DEFINE_GAMEPLAY_TAG(Movement_Walking, TEXT("Movement.Walking"));
-UE_DEFINE_GAMEPLAY_TAG(Movement_Falling, TEXT("Movement.Falling"));
-UE_DEFINE_GAMEPLAY_TAG(Movement_Flying, TEXT("Movement.Flying"));
+UE_DEFINE_GAMEPLAY_TAG(Movement_Ground_Walking, TEXT("Movement.Ground.Walking"));
+UE_DEFINE_GAMEPLAY_TAG(Movement_Air_Falling, TEXT("Movement.Air.Falling"));
+UE_DEFINE_GAMEPLAY_TAG(Movement_Air_Flying, TEXT("Movement.Air.Flying"));
 UE_DEFINE_GAMEPLAY_TAG(Movement_Swimming, TEXT("Movement.Swimming"));
 UE_DEFINE_GAMEPLAY_TAG(Movement_Custom, TEXT("Movement.Custom"));
 

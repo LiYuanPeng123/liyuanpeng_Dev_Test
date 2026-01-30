@@ -425,7 +425,7 @@ EStaggerType UCombatAbility_HitStagger::GetStaggerType()
 		{
 			return EStaggerType::KnockFly;
 		}
-		else if (CASC->HasTag(Movement_Falling) || CASC->HasTag(Movement_Flying))
+		else if (CASC->HasTag(Movement_Air_Falling) || CASC->HasTag(Movement_Air_Flying))
 		{
 			return EStaggerType::Air;
 		}

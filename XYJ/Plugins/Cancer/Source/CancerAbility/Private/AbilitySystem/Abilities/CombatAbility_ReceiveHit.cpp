@@ -275,7 +275,7 @@ void UCombatAbility_ReceiveHit::HandleReceiveDamage_Implementation(const FGamepl
 
 	if (auto AbilitySystem = GetWorld()->GetSubsystem<UCancerGlobalAbilitySystem>())
 	{
-		AbilitySystem->K2_CombatSlomo(const_cast<AActor*>(Attacker), Victim, ComboInfo);
+		AbilitySystem->RegisterSlomo(const_cast<AActor*>(Attacker), Victim, ComboInfo);
 	}
 	float HitSoulValue = 0;
 

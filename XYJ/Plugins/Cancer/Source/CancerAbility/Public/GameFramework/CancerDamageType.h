@@ -29,7 +29,10 @@ enum class ECancerType:uint8
 	Attacker UMETA(DisplayName ="Attacker"),
 	Victim UMETA(DisplayName ="Victim"),
 	Both UMETA(DisplayName ="Both"),
+	Global UMETA(DisplayName ="Global"),
+	GlobalExceptPlayer UMETA(DisplayName ="GlobalExceptPlayer"),
 };
+
 
 UENUM(BlueprintType)
 enum class ECancerFeedbackType:uint8
@@ -64,12 +67,10 @@ USTRUCT(BlueprintType)
 struct FCancerHitInfo
 {
 	GENERATED_BODY()
-	UPROPERTY(BlueprintReadWrite, DisplayName="伤害来源")
+	UPROPERTY(BlueprintReadWrite, DisplayName="伤害来源(角色)")
 	AActor* SourceActor = nullptr;
-	UPROPERTY(BlueprintReadWrite, DisplayName="伤害施加者")
+	UPROPERTY(BlueprintReadWrite, DisplayName="伤害施加者(实际施加伤害)")
 	AActor* CapActor = nullptr;
-	UPROPERTY(BlueprintReadWrite, DisplayName="最终具体伤害来源")
-	AActor* FinalDamageActor = nullptr;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="伤害类型|")
 	ECancerHitType HitType = ECancerHitType::MeleeWeapon;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, DisplayName="气力伤害系数")
@@ -166,6 +167,22 @@ struct CANCERABILITY_API FCancerComboInfo
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="命中|配置", DisplayName="时长")
 	float SolmoTime = 0.f;
+
+	//表现力增强配置 ---
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="命中|表现", DisplayName="启用模型震动")
+	bool bEnableMeshShake = false;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="命中|表现", DisplayName="震动幅度",
+		meta=(EditCondition="bEnableMeshShake"))
+	FVector ShakeAmplitude = FVector(5.0f, 5.0f, 5.0f);
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="命中|表现", DisplayName="震动频率曲线",
+		meta=(EditCondition="bEnableMeshShake"))
+	FRuntimeFloatCurve ShakeCurve;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="命中|表现", DisplayName="启用全局后期特效",
+		meta=(EditCondition="Type == ECancerType::Global || Type == ECancerType::GlobalExceptPlayer"))
+	bool bEnablePostProcess = false;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="命中|表现", DisplayName="后期特效强度",
+		meta=(EditCondition="bEnablePostProcess"))
+	float PostProcessIntensity = 1.0f;
 };
 
 
@@ -200,7 +217,7 @@ struct FCancerHitEffectInfo
 	FRotator GCInvulnerableRotation = FRotator::ZeroRotator;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|踩踏", DisplayName="踩踏")
-	bool bAvoid = true;
+	bool bAvoid = false;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "类型|踩踏", meta=(EditCondition ="bAvoid"),
 		DisplayName="踩踏GC标签")
 	FGameplayTag GCAvoidType = Tag_GameplayCue_Avoid;

@@ -44,5 +44,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "CancerCore System Interface",
 		DisplayName="启用碰撞")
 	void EnableCharacterCollision();
-	
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "CancerCore System Interface",
+		DisplayName="启用溶解效果")
+	void EnableDissolve(float Time = 2);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "CancerCore System Interface",
+		DisplayName="关闭溶解效果")
+	void DisableDissolve();
 };

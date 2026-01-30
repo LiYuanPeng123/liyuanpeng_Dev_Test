@@ -51,14 +51,23 @@ void UCancerLockingTargetComponent::TickComponent(float DeltaTime, ELevelTick Ti
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	
 	//超出最大距离取消锁定
 	if (CurLockingPointComponent)
 	{
-		const float Distance = FVector::Distance(GetOwner()->GetActorLocation(),
-												 CurLockingPointComponent->GetComponentLocation());
-		if (Distance >= MaxLockingDistance)
+		// 当目标主动告知无法锁定时 取消锁定状态
+		if (CurLockingPointComponent->IsOpen == false)
 		{
 			SetLockingPointComponent(nullptr);
+		}
+		else
+		{
+			const float Distance = FVector::Distance(GetOwner()->GetActorLocation(),
+													 CurLockingPointComponent->GetComponentLocation());
+			if (Distance >= MaxLockingDistance)
+			{
+				SetLockingPointComponent(nullptr);
+			}
 		}
 	}
 
